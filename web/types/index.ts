@@ -60,3 +60,22 @@ export type PaginatedResponse<T> = {
   items: T[];
   nextCursor: string | null;
 };
+
+export type Conversation = {
+  id: string;
+  participant: Pick<User, 'id' | 'username' | 'displayName' | 'avatarUrl'>;
+  lastMessage: DirectMessage | null;
+  unreadCount: number;
+  createdAt: string;
+};
+
+export type DirectMessage = {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  sender: Pick<User, 'id' | 'username' | 'displayName' | 'avatarUrl'>;
+  content: string;
+  createdAt: string;
+  readAt: string | null;
+  deletedAt: string | null;
+};

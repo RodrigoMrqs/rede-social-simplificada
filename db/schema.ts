@@ -183,6 +183,31 @@ export const notificationPreferences = pgTable('notification_preferences', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const conversations = pgTable('conversations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userAId: uuid('user_a_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  userBId: uuid('user_b_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const directMessages = pgTable('direct_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  conversationId: uuid('conversation_id')
+    .notNull()
+    .references(() => conversations.id, { onDelete: 'cascade' }),
+  senderId: uuid('sender_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  content: varchar('content', { length: 1000 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  readAt: timestamp('read_at', { withTimezone: true }),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
+});
+
 export const moderationLogs = pgTable('moderation_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
   adminId: uuid('admin_id')

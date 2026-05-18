@@ -39,3 +39,13 @@ postsRouter.post('/:postId/comments', async (_req: AuthRequest, res) => {
 postsRouter.post('/:postId/repost', async (_req: AuthRequest, res) => {
   res.status(501).json({ message: 'Not implemented' });
 });
+
+// UC-23 Editar comentário
+postsRouter.patch('/:postId/comments/:commentId', async (_req: AuthRequest, res) => {
+  res.status(501).json({ message: 'Not implemented' });
+});
+
+// UC-24 Excluir comentário
+postsRouter.delete('/:postId/comments/:commentId', async (_req: AuthRequest, res) => {
+  res.status(501).json({ message: 'Not implemented' });
+});
