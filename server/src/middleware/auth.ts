@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { db } from '../db';
-import { sessions } from '../../../../db/schema';
+import { sessions } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
 
 export type AuthRequest = Request & {
@@ -43,4 +43,39 @@ export async function authMiddleware(
   } catch {
     res.status(401).json({ message: 'Token inválido' });
   }
+}
+
+export async function optionalAuthMiddleware(
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    next();
+    return;
+  }
+
+  const token = authHeader.slice(7);
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: string;
+      sessionId: string;
+    };
+
+    const [session] = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.id, payload.sessionId))
+      .limit(1);
+
+    if (session && session.revokedAt === null) {
+      req.userId = payload.userId;
+    }
+  } catch {
+    // token inválido — continua como visitante
+  }
+
+  next();
 }

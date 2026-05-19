@@ -98,7 +98,9 @@ postsRouter.post('/:postId/like', async (req: AuthRequest, res) => {
 
     return res.status(204).send();
   } catch (e: any) {
-    if (e.code === '23505') return res.status(409).json({ message: 'Post já curtido' });
+    const isUniqueViolation = e.code === '23505' || e.message?.includes('23505');
+    if (isUniqueViolation) return res.status(409).json({ message: 'Post já curtido' });
+    console.error('[like error]', e);
     return res.status(500).json({ message: 'Erro interno' });
   }
 });
@@ -112,7 +114,8 @@ postsRouter.delete('/:postId/like', async (req: AuthRequest, res) => {
       .delete(postLikes)
       .where(and(eq(postLikes.userId, req.userId!), eq(postLikes.postId, postId)));
     return res.status(204).send();
-  } catch {
+  } catch (e) {
+    console.error('[unlike error]', e);
     return res.status(500).json({ message: 'Erro interno' });
   }
 });

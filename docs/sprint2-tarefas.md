@@ -9,18 +9,18 @@
 **Responsável:** Noam Coelho
 
 ### Banco de dados
-- [ ] Executar a migration `0001_initial_migration.sql` no NeonDB
-- [ ] Validar conexão do servidor com o banco via `DATABASE_URL`
+- [x] Executar a migration `0001_initial_migration.sql` no NeonDB
+- [x] Validar conexão do servidor com o banco via `DATABASE_URL`
 
 ### Rotas a implementar
-- [ ] `POST /auth/register` — UC-01 (hash de senha com bcrypt, criar sessão)
-- [ ] `POST /auth/login` — UC-02 (validar credenciais, verificar sanção ativa, gerar JWT)
-- [ ] `POST /auth/logout` — UC-03 (revogar sessão)
-- [ ] `GET /users/:userId` — UC-04 (perfil público)
-- [ ] `PATCH /users/me` — UC-05 (editar perfil)
-- [ ] `DELETE /users/me` — UC-07 (soft delete + revogar sessões)
-- [ ] `POST /users/:userId/follow` — UC-08
-- [ ] `DELETE /users/:userId/follow` — UC-09
+- [x] `POST /auth/register` — UC-01 (hash de senha com bcrypt, criar sessão)
+- [x] `POST /auth/login` — UC-02 (validar credenciais, verificar sanção ativa, gerar JWT)
+- [x] `POST /auth/logout` — UC-03 (revogar sessão)
+- [x] `GET /users/:userId` — UC-04 (perfil público)
+- [x] `PATCH /users/me` — UC-05 (editar perfil)
+- [x] `DELETE /users/me` — UC-07 (soft delete + revogar sessões)
+- [x] `POST /users/:userId/follow` — UC-08
+- [x] `DELETE /users/:userId/follow` — UC-09
 
 ---
 
@@ -28,17 +28,16 @@
 **Responsável:** Rodrigo Marques
 
 ### Rotas a implementar
-- [ ] `POST /posts` — UC-11 (publicar, validar 280 chars)
-- [ ] `DELETE /posts/:postId` — UC-12 (soft delete, verificar autoria)
-- [ ] `POST /posts/:postId/like` — UC-13 (curtir)
-- [ ] `DELETE /posts/:postId/like` — UC-13 (descurtir)
-- [ ] `POST /posts/:postId/comments` — UC-14 (comentar)
-- [ ] `GET /feed` — UC-16 (posts dos seguidos, paginação por cursor)
+- [x] `POST /posts` — UC-11 (publicar, validar 280 chars)
+- [x] `DELETE /posts/:postId` — UC-12 (soft delete, verificar autoria)
+- [x] `POST /posts/:postId/like` — UC-13 (curtir)
+- [x] `DELETE /posts/:postId/like` — UC-13 (descurtir)
+- [x] `POST /posts/:postId/comments` — UC-14 (comentar)
+- [x] `GET /feed` — UC-16 (posts dos seguidos, paginação por cursor)
 
 ### Integração com API externa
-- [ ] Configurar **Resend** (serviço de e-mail — gratuito e de fácil integração)
-- [ ] Disparar e-mail de boas-vindas ao cadastro (UC-01)
-- [ ] Adicionar variável `RESEND_API_KEY` no `server/.env` e no `.env.example`
+- [ ] `Integração com API ` - Dummy API
+- [ ] `Usuários falsos` - Povoar a plataforma com usuários para post no feed 
 
 ---
 

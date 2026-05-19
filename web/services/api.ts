@@ -28,5 +28,9 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     throw new Error(error.message ?? 'Erro na requisição');
   }
 
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return undefined as T;
+  }
+
   return response.json();
 }
