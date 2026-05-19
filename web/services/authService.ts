@@ -9,10 +9,15 @@ export const authService = {
     });
   },
 
-  async register(username: string, displayName: string, password: string): Promise<Session> {
+  async register(
+    username: string,
+    displayName: string,
+    email: string,
+    password: string,
+  ): Promise<Session> {
     return request<Session>('/auth/register', {
       method: 'POST',
-      body: { username, displayName, password },
+      body: { username, displayName, email, password },
     });
   },
 

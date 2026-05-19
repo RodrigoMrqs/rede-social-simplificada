@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 import { db } from '../db';
-import { admins } from '../../../../db/schema';
+import { admins } from '../../../db/schema';
 import { eq, isNull } from 'drizzle-orm';
 
 export type AdminRequest = AuthRequest & {
