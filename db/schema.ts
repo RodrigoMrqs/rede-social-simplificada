@@ -7,6 +7,7 @@ import {
   boolean,
   timestamp,
   primaryKey,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 
 export const notificationTypeEnum = pgEnum('notification_type', [
@@ -53,7 +54,7 @@ export const admins = pgTable('admins', {
     .notNull()
     .unique()
     .references(() => users.id, { onDelete: 'cascade' }),
-  grantedBy: uuid('granted_by').references((): ReturnType<typeof uuid> => admins.id as any),
+  grantedBy: uuid('granted_by').references((): AnyPgColumn => admins.id),
   grantedAt: timestamp('granted_at', { withTimezone: true }).notNull().defaultNow(),
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
 });
@@ -119,7 +120,7 @@ export const posts = pgTable('posts', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   content: varchar('content', { length: 280 }).notNull().default(''),
-  repostOfId: uuid('repost_of_id').references((): ReturnType<typeof uuid> => posts.id as any, {
+  repostOfId: uuid('repost_of_id').references((): AnyPgColumn => posts.id, {
     onDelete: 'set null',
   }),
   isRepostSimple: boolean('is_repost_simple').notNull().default(false),
