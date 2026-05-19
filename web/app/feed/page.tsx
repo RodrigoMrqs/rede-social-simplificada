@@ -14,19 +14,15 @@ export default function FeedPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
 
   useEffect(() => {
+    setPosts([]);
+    setNextCursor(null);
     loadFeed();
-  }, []);
+  }, [session?.token]);
 
   const loadFeed = async (cursor?: string) => {
-    if (!session?.token) {
-      setError('Você precisa estar logado');
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const response = await postService.getFeed(session.token, cursor);
+      const response = await postService.getFeed(session?.token, cursor);
       if (cursor) {
         setPosts((prev) => [...prev, ...response.items]);
       } else {
@@ -63,7 +59,7 @@ export default function FeedPage() {
         ),
       );
     } catch (err) {
-      console.error('Erro ao atualizar like:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar like');
     }
   };
 
@@ -114,8 +110,8 @@ export default function FeedPage() {
               key={post.id}
               post={post}
               isAuthor={session?.user.id === post.authorId}
-              onLike={handleLike}
-              onDelete={handleDelete}
+              onLike={session ? handleLike : undefined}
+              onDelete={session ? handleDelete : undefined}
             />
           ))}
 
@@ -151,8 +147,8 @@ function PostCard({
 }: {
   post: Post;
   isAuthor: boolean;
-  onLike: (postId: string, isLiked: boolean) => void;
-  onDelete: (postId: string) => void;
+  onLike?: (postId: string, isLiked: boolean) => void;
+  onDelete?: (postId: string) => void;
 }) {
   return (
     <div
@@ -193,18 +189,22 @@ function PostCard({
           paddingTop: '10px',
         }}
       >
-        <button
-          onClick={() => onLike(post.id, post.likedByMe)}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: post.likedByMe ? '#dc3545' : '#666',
-            fontSize: '14px',
-          }}
-        >
-          ❤️ {post.likesCount} {post.likedByMe ? '(Curtido)' : ''}
-        </button>
+        {onLike ? (
+          <button
+            onClick={() => onLike(post.id, post.likedByMe)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: post.likedByMe ? '#dc3545' : '#666',
+              fontSize: '14px',
+            }}
+          >
+            ❤️ {post.likesCount} {post.likedByMe ? '(Curtido)' : ''}
+          </button>
+        ) : (
+          <span style={{ color: '#666', fontSize: '14px' }}>❤️ {post.likesCount}</span>
+        )}
 
         <Link href={`/post/${post.id}`} style={{ textDecoration: 'none', color: '#666' }}>
           <button style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -212,7 +212,7 @@ function PostCard({
           </button>
         </Link>
 
-        {isAuthor && (
+        {isAuthor && onDelete && (
           <button
             onClick={() => onDelete(post.id)}
             style={{

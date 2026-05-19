@@ -2,7 +2,7 @@ import { request } from './api';
 import { Post, Comment, PaginatedResponse } from '@/types';
 
 export const postService = {
-  async getFeed(token: string, cursor?: string): Promise<PaginatedResponse<Post>> {
+  async getFeed(token?: string, cursor?: string): Promise<PaginatedResponse<Post>> {
     const query = cursor ? `?cursor=${cursor}` : '';
     return request(`/feed${query}`, { token });
   },

@@ -28,17 +28,16 @@
 **Responsável:** Rodrigo Marques
 
 ### Rotas a implementar
-- [ ] `POST /posts` — UC-11 (publicar, validar 280 chars)
-- [ ] `DELETE /posts/:postId` — UC-12 (soft delete, verificar autoria)
-- [ ] `POST /posts/:postId/like` — UC-13 (curtir)
-- [ ] `DELETE /posts/:postId/like` — UC-13 (descurtir)
-- [ ] `POST /posts/:postId/comments` — UC-14 (comentar)
-- [ ] `GET /feed` — UC-16 (posts dos seguidos, paginação por cursor)
+- [x] `POST /posts` — UC-11 (publicar, validar 280 chars)
+- [x] `DELETE /posts/:postId` — UC-12 (soft delete, verificar autoria)
+- [x] `POST /posts/:postId/like` — UC-13 (curtir)
+- [x] `DELETE /posts/:postId/like` — UC-13 (descurtir)
+- [x] `POST /posts/:postId/comments` — UC-14 (comentar)
+- [x] `GET /feed` — UC-16 (posts dos seguidos, paginação por cursor)
 
 ### Integração com API externa
-- [ ] Configurar **Resend** (serviço de e-mail — gratuito e de fácil integração)
-- [ ] Disparar e-mail de boas-vindas ao cadastro (UC-01)
-- [ ] Adicionar variável `RESEND_API_KEY` no `server/.env` e no `.env.example`
+- [ ] `Integração com API ` - Dummy API
+- [ ] `Usuários falsos` - Povoar a plataforma com usuários para post no feed 
 
 ---
 
