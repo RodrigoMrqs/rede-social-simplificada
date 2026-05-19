@@ -95,7 +95,6 @@ export default function FeedPage() {
         </Link>
       </div>
 
-      {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
 
       {loading && !posts.length ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>Carregando...</div>

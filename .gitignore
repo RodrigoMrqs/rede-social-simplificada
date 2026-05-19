@@ -5,3 +5,5 @@ dist/
 .expo/
 .expo-shared/
 CLAUDE.md
+.claude
+.next/
