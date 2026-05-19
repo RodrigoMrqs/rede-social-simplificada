@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import { authRouter } from './routes/auth';
 import { postsRouter } from './routes/posts';
 import { usersRouter } from './routes/users';
@@ -9,9 +10,14 @@ import { adminRouter } from './routes/admin';
 import { messagesRouter } from './routes/messages';
 
 const app = express();
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT ?? 3001;
 
+app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000' }));
 app.use(express.json());
+app.use((req, _res, next) => {
+  console.log(`[req] ${req.method} ${req.path}`);
+  next();
+});
 
 app.use('/auth', authRouter);
 app.use('/posts', postsRouter);
