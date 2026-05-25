@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import { db } from '../db';
 import {
   users,
@@ -196,16 +196,53 @@ usersRouter.delete('/:userId/follow', async (req: AuthRequest, res) => {
 });
 
 // UC-10 Listar seguidores
-usersRouter.get('/:userId/followers', async (_req: AuthRequest, res) => {
-  res.status(501).json({ message: 'Not implemented' });
+usersRouter.get('/:userId/followers', async (req: AuthRequest, res) => {
+  const param = req.params.userId as string;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const offset = (page - 1) * limit;
+
+  try {
+    const targetId = await resolveActiveUserId(param);
+    if (!targetId) return res.status(404).json({ message: 'Usuário não encontrado' });
+
+    const rows = await db
+      .select(userPublicFields(req.userId!))
+      .from(users)
+      .innerJoin(follows, eq(follows.followerId, users.id))
+      .where(and(eq(follows.followedId, targetId), isNull(users.deletedAt)))
+      .orderBy(asc(follows.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return res.json(rows.map((row) => ({ ...row, isMe: row.id === req.userId })));
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
 });
 
 // UC-10 Listar seguindo
-usersRouter.get('/:userId/following', async (_req: AuthRequest, res) => {
-  res.status(501).json({ message: 'Not implemented' });
-});
+usersRouter.get('/:userId/following', async (req: AuthRequest, res) => {
+  const param = req.params.userId as string;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const offset = (page - 1) * limit;
 
-// UC-18 Busca de usuários
-usersRouter.get('/search/users', async (_req: AuthRequest, res) => {
-  res.status(501).json({ message: 'Not implemented' });
+  try {
+    const targetId = await resolveActiveUserId(param);
+    if (!targetId) return res.status(404).json({ message: 'Usuário não encontrado' });
+
+    const rows = await db
+      .select(userPublicFields(req.userId!))
+      .from(users)
+      .innerJoin(follows, eq(follows.followedId, users.id))
+      .where(and(eq(follows.followerId, targetId), isNull(users.deletedAt)))
+      .orderBy(asc(follows.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return res.json(rows.map((row) => ({ ...row, isMe: row.id === req.userId })));
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
 });

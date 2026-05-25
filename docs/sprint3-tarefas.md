@@ -9,15 +9,15 @@
 **Responsável:** Noam Coelho
 
 ### Rotas a implementar
-- [ ] `GET /users/:userId/followers` — UC-10 (listar seguidores, paginado)
-- [ ] `GET /users/:userId/following` — UC-10 (listar seguindo, paginado)
-- [ ] `POST /posts/:postId/comments` — UC-14 (comentar em post)
-- [ ] `PATCH /posts/:postId/comments/:commentId` — UC-23 (editar comentário, somente autor)
-- [ ] `DELETE /posts/:postId/comments/:commentId` — UC-24 (soft delete de comentário)
-- [ ] `POST /posts/:postId/repost` — UC-15 (repostar, com ou sem comentário)
-- [ ] `GET /search` — UC-18 (busca de usuários e posts via tsvector)
-- [ ] `GET /notifications` — UC-17 (listar notificações do usuário autenticado)
-- [ ] `PATCH /notifications/:id/read` — UC-17 (marcar como lida)
+- [x] `GET /users/:userId/followers` — UC-10 (listar seguidores, paginado)
+- [x] `GET /users/:userId/following` — UC-10 (listar seguindo, paginado)
+- [x] `POST /posts/:postId/comments` — UC-14 (comentar em post)
+- [x] `PATCH /posts/:postId/comments/:commentId` — UC-23 (editar comentário, somente autor)
+- [x] `DELETE /posts/:postId/comments/:commentId` — UC-24 (soft delete de comentário)
+- [x] `POST /posts/:postId/repost` — UC-15 (repostar, com ou sem comentário)
+- [x] `GET /search` — UC-18 (busca de usuários e posts via tsvector)
+- [x] `GET /notifications` — UC-17 (listar notificações do usuário autenticado)
+- [x] `PATCH /notifications/:id/read` — UC-17 (marcar como lida)
 
 ---
 

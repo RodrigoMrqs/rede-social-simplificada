@@ -169,16 +169,109 @@ postsRouter.post('/:postId/comments', async (req: AuthRequest, res) => {
 });
 
 // UC-15 Repostar
-postsRouter.post('/:postId/repost', async (_req: AuthRequest, res) => {
-  res.status(501).json({ message: 'Not implemented' });
+postsRouter.post('/:postId/repost', async (req: AuthRequest, res) => {
+  const postId = req.params.postId as string;
+  const userId = req.userId!;
+
+  const parse = z.object({ content: z.string().max(280).optional() }).safeParse(req.body);
+  if (!parse.success) {
+    return res.status(400).json({ message: 'Conteúdo inválido', errors: parse.error.errors });
+  }
+
+  try {
+    const [original] = await db
+      .select()
+      .from(posts)
+      .where(and(eq(posts.id, postId), isNull(posts.deletedAt), isNull(posts.hiddenAt)))
+      .limit(1);
+
+    if (!original) return res.status(404).json({ message: 'Post não encontrado' });
+
+    const isSimple = !parse.data.content || parse.data.content.trim() === '';
+
+    const [repost] = await db
+      .insert(posts)
+      .values({
+        authorId: userId,
+        content: parse.data.content ?? '',
+        repostOfId: postId,
+        isRepostSimple: isSimple,
+      })
+      .returning();
+
+    if (original.authorId !== userId) {
+      const [prefs] = await db
+        .select({ notifyRepost: notificationPreferences.notifyRepost })
+        .from(notificationPreferences)
+        .where(eq(notificationPreferences.userId, original.authorId))
+        .limit(1);
+
+      if (!prefs || prefs.notifyRepost) {
+        await db.insert(notifications).values({
+          recipientId: original.authorId,
+          actorId: userId,
+          type: 'repost',
+          postId,
+        });
+      }
+    }
+
+    return res.status(201).json(repost);
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
 });
 
 // UC-23 Editar comentário
-postsRouter.patch('/:postId/comments/:commentId', async (_req: AuthRequest, res) => {
-  res.status(501).json({ message: 'Not implemented' });
+postsRouter.patch('/:postId/comments/:commentId', async (req: AuthRequest, res) => {
+  const { postId, commentId } = req.params as { postId: string; commentId: string };
+  const userId = req.userId!;
+
+  const parse = contentSchema.safeParse(req.body);
+  if (!parse.success) {
+    return res.status(400).json({ message: 'Conteúdo inválido', errors: parse.error.errors });
+  }
+
+  try {
+    const [comment] = await db
+      .select()
+      .from(comments)
+      .where(and(eq(comments.id, commentId), eq(comments.postId, postId), isNull(comments.deletedAt)))
+      .limit(1);
+
+    if (!comment) return res.status(404).json({ message: 'Comentário não encontrado' });
+    if (comment.authorId !== userId) return res.status(403).json({ message: 'Sem permissão' });
+
+    const [updated] = await db
+      .update(comments)
+      .set({ content: parse.data.content })
+      .where(eq(comments.id, commentId))
+      .returning();
+
+    return res.json(updated);
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
 });
 
-// UC-24 Excluir comentário
-postsRouter.delete('/:postId/comments/:commentId', async (_req: AuthRequest, res) => {
-  res.status(501).json({ message: 'Not implemented' });
+// UC-24 Excluir comentário (soft delete)
+postsRouter.delete('/:postId/comments/:commentId', async (req: AuthRequest, res) => {
+  const { postId, commentId } = req.params as { postId: string; commentId: string };
+  const userId = req.userId!;
+
+  try {
+    const [comment] = await db
+      .select()
+      .from(comments)
+      .where(and(eq(comments.id, commentId), eq(comments.postId, postId), isNull(comments.deletedAt)))
+      .limit(1);
+
+    if (!comment) return res.status(404).json({ message: 'Comentário não encontrado' });
+    if (comment.authorId !== userId) return res.status(403).json({ message: 'Sem permissão' });
+
+    await db.update(comments).set({ deletedAt: new Date() }).where(eq(comments.id, commentId));
+    return res.status(204).send();
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
 });
