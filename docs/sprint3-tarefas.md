@@ -49,7 +49,7 @@
 - [x] Atualizar tabela de resumo de cobertura no final do documento (41 CTs, 100% passando)
 
 ### Análise estática e cobertura
-- [ ] Configurar **SonarQube Cloud** ou **Codacy** apontando para o repositório
+- [x] Configurar **SonarQube Cloud** ou **Codacy** apontando para o repositório
 - [ ] Gerar relatório com métricas: complexidade, duplicação, code smells e vulnerabilidades
 - [ ] Gerar relatório de cobertura do backend: `cd server && npm run test:coverage`
 - [ ] Gerar relatório de cobertura do frontend: `cd web && npm run test:coverage`

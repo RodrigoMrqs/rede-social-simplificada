@@ -11,7 +11,7 @@ import {
 } from '../../../db/schema';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { revokeAllSessions } from '../lib/auth';
-import { fetchActiveUser, isUuid } from '../lib/users';
+import { fetchActiveUser, isUuid, userPublicFields } from '../lib/users';
 import { isUniqueViolation } from '../lib/dbError';
 
 export const usersRouter = Router();

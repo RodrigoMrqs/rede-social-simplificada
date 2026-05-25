@@ -649,6 +649,532 @@
 
 ---
 
+---
+
+## UC-10 — Listar Seguidores / Seguindo
+
+### CT-48 — Listar seguidores de um usuário
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-48 |
+| **Objetivo** | Verificar que GET /users/:userId/followers retorna a lista de seguidores |
+| **Pré-condições** | Usuário autenticado; usuário alvo existe |
+| **Dados de entrada** | `userId` válido |
+| **Passos de execução** | 1. Enviar GET /users/:userId/followers |
+| **Resultado esperado** | HTTP 200 com array contendo os seguidores |
+| **Resultado obtido** | HTTP 200 — lista de seguidores retornada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-49 — Listar seguidores com lista vazia
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-49 |
+| **Objetivo** | Verificar retorno de array vazio quando ninguém segue o usuário |
+| **Pré-condições** | Usuário autenticado; usuário alvo existe mas não tem seguidores |
+| **Dados de entrada** | `userId` de usuário sem seguidores |
+| **Passos de execução** | 1. Enviar GET /users/:userId/followers |
+| **Resultado esperado** | HTTP 200 com `[]` |
+| **Resultado obtido** | HTTP 200 — array vazio |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-50 — Retornar 404 ao listar seguidores de usuário inexistente
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-50 |
+| **Objetivo** | Verificar tratamento de usuário não encontrado |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `userId` que não existe no banco |
+| **Passos de execução** | 1. Enviar GET /users/:userId/followers |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 — usuário não encontrado |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-51 — Campo isMe marcado corretamente na lista de seguidores
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-51 |
+| **Objetivo** | Verificar que o campo `isMe` é `true` quando o seguidor é o próprio usuário autenticado |
+| **Pré-condições** | Usuário autenticado aparece como seguidor |
+| **Dados de entrada** | `userId` alvo; seguidor é o próprio usuário autenticado |
+| **Passos de execução** | 1. Enviar GET /users/:userId/followers |
+| **Resultado esperado** | HTTP 200; `isMe: true` no objeto do usuário autenticado |
+| **Resultado obtido** | HTTP 200 — `isMe` correto |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-52 — Listar usuários que o usuário segue
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-52 |
+| **Objetivo** | Verificar que GET /users/:userId/following retorna lista de seguidos |
+| **Pré-condições** | Usuário autenticado; usuário alvo segue outras pessoas |
+| **Dados de entrada** | `userId` válido |
+| **Passos de execução** | 1. Enviar GET /users/:userId/following |
+| **Resultado esperado** | HTTP 200 com array dos usuários seguidos |
+| **Resultado obtido** | HTTP 200 — lista de seguidos retornada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-53 — Retornar 404 ao listar seguidos de usuário inexistente
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-53 |
+| **Objetivo** | Verificar tratamento de usuário não encontrado em /following |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `userId` que não existe |
+| **Passos de execução** | 1. Enviar GET /users/:userId/following |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-54 — Paginação em seguidores
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-54 |
+| **Objetivo** | Verificar que parâmetros page e limit são aceitos |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `page=2&limit=5` |
+| **Passos de execução** | 1. Enviar GET /users/:userId/followers?page=2&limit=5 |
+| **Resultado esperado** | HTTP 200 |
+| **Resultado obtido** | HTTP 200 — paginação aplicada |
+| **Status** | ✅ Passou |
+
+---
+
+## UC-14 — Comentar em Post
+
+### CT-55 — Criar comentário com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-55 |
+| **Objetivo** | Verificar que POST /posts/:postId/comments cria um comentário e retorna 201 |
+| **Pré-condições** | Usuário autenticado; post existe |
+| **Dados de entrada** | `{ "content": "Comentário" }` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/comments com body válido |
+| **Resultado esperado** | HTTP 201 com objeto do comentário criado |
+| **Resultado obtido** | HTTP 201 — comentário criado e retornado |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-56 — Rejeitar comentário com content vazio
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-56 |
+| **Objetivo** | Verificar validação de content obrigatório |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "content": "" }` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/comments com content vazio |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-57 — Rejeitar comentário com mais de 280 caracteres
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-57 |
+| **Objetivo** | Verificar que comentário acima do limite é rejeitado |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "content": "a".repeat(281) }` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/comments com content excedido |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-58 — Retornar 404 ao comentar em post inexistente
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-58 |
+| **Objetivo** | Verificar que post não encontrado resulta em 404 |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `postId` inexistente, `{ "content": "Comentário" }` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/comments |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-59 — Criar notificação ao comentar em post de outro usuário
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-59 |
+| **Objetivo** | Verificar que comentário em post alheio dispara notificação ao autor |
+| **Pré-condições** | Usuário autenticado; post pertence a outro usuário |
+| **Dados de entrada** | `postId` de post de outro usuário; `{ "content": "Comentário" }` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/comments |
+| **Resultado esperado** | HTTP 201; notificação do tipo `comment` inserida |
+| **Resultado obtido** | HTTP 201 — notificação criada |
+| **Status** | ✅ Passou |
+
+---
+
+## UC-23 — Editar Comentário
+
+### CT-60 — Editar comentário com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-60 |
+| **Objetivo** | Verificar que autor pode editar o próprio comentário |
+| **Pré-condições** | Usuário autenticado; comentário pertence ao usuário |
+| **Dados de entrada** | `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId/comments/:commentId com novo content |
+| **Resultado esperado** | HTTP 200 com comentário atualizado |
+| **Resultado obtido** | HTTP 200 — content atualizado |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-61 — Rejeitar edição de comentário alheio
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-61 |
+| **Objetivo** | Verificar que usuário não pode editar comentário de outro |
+| **Pré-condições** | Usuário autenticado; comentário pertence a outro usuário |
+| **Dados de entrada** | `commentId` de outro autor; `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId/comments/:commentId |
+| **Resultado esperado** | HTTP 403 |
+| **Resultado obtido** | HTTP 403 — edição negada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-62 — Retornar 404 ao editar comentário inexistente
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-62 |
+| **Objetivo** | Verificar que comentário não encontrado resulta em 404 |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `commentId` inexistente; `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId/comments/:commentId |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-63 — Rejeitar edição com content inválido
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-63 |
+| **Objetivo** | Verificar validação de content na edição |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "content": "" }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId/comments/:commentId com content vazio |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+## UC-24 — Excluir Comentário
+
+### CT-64 — Excluir comentário próprio com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-64 |
+| **Objetivo** | Verificar que autor pode fazer soft delete do próprio comentário |
+| **Pré-condições** | Usuário autenticado; comentário pertence ao usuário |
+| **Dados de entrada** | `commentId` próprio |
+| **Passos de execução** | 1. Enviar DELETE /posts/:postId/comments/:commentId |
+| **Resultado esperado** | HTTP 204 |
+| **Resultado obtido** | HTTP 204 — comentário deletado |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-65 — Rejeitar exclusão de comentário alheio
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-65 |
+| **Objetivo** | Verificar que usuário não pode excluir comentário de outro |
+| **Pré-condições** | Usuário autenticado; comentário pertence a outro usuário |
+| **Dados de entrada** | `commentId` de outro autor |
+| **Passos de execução** | 1. Enviar DELETE /posts/:postId/comments/:commentId |
+| **Resultado esperado** | HTTP 403 |
+| **Resultado obtido** | HTTP 403 — exclusão negada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-66 — Retornar 404 ao excluir comentário inexistente
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-66 |
+| **Objetivo** | Verificar que comentário não encontrado resulta em 404 |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `commentId` inexistente |
+| **Passos de execução** | 1. Enviar DELETE /posts/:postId/comments/:commentId |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+## UC-15 — Repostar
+
+### CT-67 — Repost simples (sem comentário) retorna 201
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-67 |
+| **Objetivo** | Verificar criação de repost simples sem texto adicional |
+| **Pré-condições** | Usuário autenticado; post original existe |
+| **Dados de entrada** | `postId` válido; body `{}` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/repost sem content |
+| **Resultado esperado** | HTTP 201; `isRepostSimple: true`, `repostOfId` preenchido |
+| **Resultado obtido** | HTTP 201 — repost simples criado |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-68 — Repost com comentário (quote) retorna 201
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-68 |
+| **Objetivo** | Verificar criação de quote repost com texto adicional |
+| **Pré-condições** | Usuário autenticado; post original existe |
+| **Dados de entrada** | `postId` válido; `{ "content": "Minha opinião" }` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/repost com content |
+| **Resultado esperado** | HTTP 201; `isRepostSimple: false`; `content` com o texto enviado |
+| **Resultado obtido** | HTTP 201 — quote repost criado |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-69 — Retornar 404 ao repostar post inexistente
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-69 |
+| **Objetivo** | Verificar tratamento de post original não encontrado |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `postId` inexistente |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/repost |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-70 — Rejeitar repost com comentário acima de 280 caracteres
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-70 |
+| **Objetivo** | Verificar validação de tamanho do content no repost |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "content": "a".repeat(281) }` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/repost com content excedido |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-71 — Repost de post alheio dispara notificação
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-71 |
+| **Objetivo** | Verificar que repost de post de outro usuário gera notificação do tipo `repost` |
+| **Pré-condições** | Usuário autenticado; post original pertence a outro usuário |
+| **Dados de entrada** | `postId` de post de outro autor; body `{}` |
+| **Passos de execução** | 1. Enviar POST /posts/:postId/repost |
+| **Resultado esperado** | HTTP 201; notificação do tipo `repost` inserida |
+| **Resultado obtido** | HTTP 201 — notificação criada |
+| **Status** | ✅ Passou |
+
+---
+
+## UC-17 — Notificações
+
+### CT-72 — Listar notificações com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-72 |
+| **Objetivo** | Verificar que GET /notifications retorna a lista de notificações do usuário |
+| **Pré-condições** | Usuário autenticado; há notificações para o usuário |
+| **Dados de entrada** | — |
+| **Passos de execução** | 1. Enviar GET /notifications |
+| **Resultado esperado** | HTTP 200 com array de notificações; campos `id`, `type` presentes |
+| **Resultado obtido** | HTTP 200 — lista retornada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-73 — Retornar lista vazia quando não há notificações
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-73 |
+| **Objetivo** | Verificar que retorno é array vazio quando não há notificações |
+| **Pré-condições** | Usuário autenticado; sem notificações |
+| **Dados de entrada** | — |
+| **Passos de execução** | 1. Enviar GET /notifications |
+| **Resultado esperado** | HTTP 200 com `[]` |
+| **Resultado obtido** | HTTP 200 — array vazio |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-74 — Paginação aceita parâmetros page e limit
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-74 |
+| **Objetivo** | Verificar que query params de paginação são aceitos sem erro |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `page=2&limit=10` |
+| **Passos de execução** | 1. Enviar GET /notifications?page=2&limit=10 |
+| **Resultado esperado** | HTTP 200 |
+| **Resultado obtido** | HTTP 200 — paginação aplicada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-75 — Marcar notificação como lida
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-75 |
+| **Objetivo** | Verificar que PATCH /notifications/:id/read marca como lida e retorna `{ read: true }` |
+| **Pré-condições** | Usuário autenticado; notificação existe e não está lida |
+| **Dados de entrada** | `notificationId` válido |
+| **Passos de execução** | 1. Enviar PATCH /notifications/:id/read |
+| **Resultado esperado** | HTTP 200 com `{ "read": true }` |
+| **Resultado obtido** | HTTP 200 — notificação marcada como lida |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-76 — Retornar 404 ao marcar notificação inexistente como lida
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-76 |
+| **Objetivo** | Verificar tratamento de notificação não encontrada ou já lida |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `notificationId` que não existe ou já está lido |
+| **Passos de execução** | 1. Enviar PATCH /notifications/:id/read |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+## UC-18 — Busca
+
+### CT-77 — Retornar 400 quando parâmetro q não é fornecido
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-77 |
+| **Objetivo** | Verificar validação do parâmetro obrigatório `q` |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | Nenhum query param |
+| **Passos de execução** | 1. Enviar GET /search sem `q` |
+| **Resultado esperado** | HTTP 400 com mensagem mencionando `q` |
+| **Resultado obtido** | HTTP 400 — parâmetro obrigatório ausente |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-78 — Busca sem type retorna usuários e posts
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-78 |
+| **Objetivo** | Verificar que busca sem type retorna ambos os tipos de resultado |
+| **Pré-condições** | Usuário autenticado; resultados existem no banco |
+| **Dados de entrada** | `q=noam` |
+| **Passos de execução** | 1. Enviar GET /search?q=noam |
+| **Resultado esperado** | HTTP 200 com `users` e `posts` preenchidos |
+| **Resultado obtido** | HTTP 200 — ambos os arrays retornados |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-79 — Busca com type=users retorna apenas usuários
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-79 |
+| **Objetivo** | Verificar filtro por tipo de resultado `users` |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `q=noam&type=users` |
+| **Passos de execução** | 1. Enviar GET /search?q=noam&type=users |
+| **Resultado esperado** | HTTP 200 com `users` preenchido; `posts` ausente |
+| **Resultado obtido** | HTTP 200 — apenas usuários retornados |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-80 — Busca com type=posts retorna apenas posts
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-80 |
+| **Objetivo** | Verificar filtro por tipo de resultado `posts` |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `q=teste&type=posts` |
+| **Passos de execução** | 1. Enviar GET /search?q=teste&type=posts |
+| **Resultado esperado** | HTTP 200 com `posts` preenchido; `users` ausente |
+| **Resultado obtido** | HTTP 200 — apenas posts retornados |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-81 — Retornar listas vazias quando não há resultados
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-81 |
+| **Objetivo** | Verificar que busca sem correspondências retorna arrays vazios |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `q=xyzabcnaoexiste` |
+| **Passos de execução** | 1. Enviar GET /search?q=xyzabcnaoexiste |
+| **Resultado esperado** | HTTP 200 com `users: []` e `posts: []` |
+| **Resultado obtido** | HTTP 200 — arrays vazios |
+| **Status** | ✅ Passou |
+
+---
+
 ## Resumo de Cobertura
 
 | UC | Total de CTs | Passou | Falhou | Pendente |
@@ -656,15 +1182,22 @@
 | UC-01 Cadastro | 6 | 6 | 0 | 0 |
 | UC-02 Login | 4 | 4 | 0 | 0 |
 | UC-03 Logout | 1 | 1 | 0 | 0 |
+| UC-10 Seguidores/Seguindo | 7 | 7 | 0 | 0 |
 | UC-11 Publicar | 3 | 3 | 0 | 0 |
 | UC-12 Excluir Post | 3 | 3 | 0 | 0 |
 | UC-13 Curtir/Descurtir | 3 | 3 | 0 | 0 |
+| UC-14 Comentar | 5 | 5 | 0 | 0 |
+| UC-15 Repostar | 5 | 5 | 0 | 0 |
 | UC-16 Feed | 3 | 3 | 0 | 0 |
+| UC-17 Notificações | 5 | 5 | 0 | 0 |
+| UC-18 Busca | 5 | 5 | 0 | 0 |
 | UC-19/22 Dashboard Admin | 1 | 1 | 0 | 0 |
 | UC-20 Moderar Post | 5 | 5 | 0 | 0 |
 | UC-21 Suspender/Banir | 4 | 4 | 0 | 0 |
+| UC-23 Editar Comentário | 4 | 4 | 0 | 0 |
+| UC-24 Excluir Comentário | 3 | 3 | 0 | 0 |
 | UC-25 Enviar Mensagem | 3 | 3 | 0 | 0 |
 | UC-26 Listar Conversas | 1 | 1 | 0 | 0 |
 | UC-27 Ler Conversa | 2 | 2 | 0 | 0 |
 | UC-28 Excluir Mensagem | 2 | 2 | 0 | 0 |
-| **Total** | **41** | **41** | **0** | **0** |
+| **Total** | **78** | **78** | **0** | **0** |
