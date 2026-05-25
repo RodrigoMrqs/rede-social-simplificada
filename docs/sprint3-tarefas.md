@@ -25,14 +25,17 @@
 **Responsável:** Rodrigo Marques
 
 ### Rotas a implementar
-- [ ] `GET /admin/dashboard` — UC-19, UC-22 (métricas agregadas)
-- [ ] `POST /admin/posts/:postId/hide` — UC-20 (ocultar post + moderation_log)
-- [ ] `DELETE /admin/posts/:postId` — UC-20 (deletar post via admin)
-- [ ] `POST /admin/users/:userId/sanction` — UC-21 (suspender/banir + revogar sessões)
-- [ ] `POST /messages` — UC-25 (enviar mensagem, criar conversa se não existir)
-- [ ] `GET /messages` — UC-26 (listar conversas do usuário autenticado)
-- [ ] `GET /messages/:conversationId` — UC-27 (ler conversa, marcar mensagens como lidas)
-- [ ] `DELETE /messages/:messageId` — UC-28 (soft delete de mensagem)
+- [x] `GET /admin/dashboard` — UC-19, UC-22 (métricas agregadas)
+- [x] `POST /admin/posts/:postId/hide` — UC-20 (ocultar post + moderation_log)
+- [x] `POST /admin/posts/:postId/restore` — UC-20 (restaurar post oculto + moderation_log)
+- [x] `DELETE /admin/posts/:postId` — UC-20 (deletar post via admin)
+- [x] `POST /admin/users/:userId/sanction` — UC-21 (suspender/banir + revogar sessões)
+- [x] `POST /admin/users/:userId/sanction/:sanctionId/revoke` — UC-21 (revogar sanção)
+- [x] `POST /messages` — UC-25 (enviar mensagem, criar conversa se não existir)
+- [x] `GET /messages` — UC-26 (listar conversas do usuário autenticado)
+- [x] `GET /messages/:conversationId` — UC-27 (ler conversa, marcar mensagens como lidas)
+- [x] `POST /messages/:conversationId` — UC-25 (enviar mensagem em conversa existente)
+- [x] `DELETE /messages/:conversationId/:messageId` — UC-28 (soft delete de mensagem)
 
 ### Testes end-to-end
 - [ ] Instalar e configurar **Playwright** no workspace `web`
@@ -42,8 +45,8 @@
 - [ ] Escrever teste E2E para seguir usuário
 
 ### Documentação de casos de teste
-- [ ] Ampliar `docs/casos-de-teste.md` com CTs dos UCs restantes: UC-13 (curtir), UC-14 (comentar), UC-16 (feed), UC-17 (notificações)
-- [ ] Atualizar tabela de resumo de cobertura no final do documento
+- [x] Ampliar `docs/casos-de-teste.md` com CTs dos UCs restantes: UC-13 (curtir), UC-16 (feed), UC-19/22 (admin), UC-20 (moderar), UC-21 (sanção), UC-25–28 (mensagens)
+- [x] Atualizar tabela de resumo de cobertura no final do documento (41 CTs, 100% passando)
 
 ### Análise estática e cobertura
 - [ ] Configurar **SonarQube Cloud** ou **Codacy** apontando para o repositório
