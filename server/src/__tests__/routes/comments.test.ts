@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
+import { chain } from '../helpers/testChain';
 
 const { mockDb, push, clear, UID, OTHER, POST_ID, COMMENT_ID } = vi.hoisted(() => {
   const UID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
@@ -7,17 +8,6 @@ const { mockDb, push, clear, UID, OTHER, POST_ID, COMMENT_ID } = vi.hoisted(() =
   const POST_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
   const COMMENT_ID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
   const q: unknown[][] = [];
-
-  function chain(r: unknown[] = []): any {
-    const p = Promise.resolve(r);
-    const o: any = {};
-    for (const m of ['from','where','innerJoin','leftJoin','orderBy','limit','offset','set','values','returning'])
-      o[m] = () => o;
-    o.then = p.then.bind(p);
-    o.catch = p.catch.bind(p);
-    o.finally = p.finally.bind(p);
-    return o;
-  }
 
   return {
     mockDb: { select: () => chain(q.shift()), insert: () => chain(q.shift()), update: () => chain(q.shift()), delete: () => chain(q.shift()) },

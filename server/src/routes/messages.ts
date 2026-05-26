@@ -18,6 +18,35 @@ function participantOrder(
     : { userAId: otherId, userBId: userId };
 }
 
+async function findConversation(conversationId: string, userId: string) {
+  const [conv] = await db
+    .select()
+    .from(conversations)
+    .where(
+      and(
+        eq(conversations.id, conversationId),
+        or(eq(conversations.userAId, userId), eq(conversations.userBId, userId)),
+      ),
+    )
+    .limit(1);
+  return conv ?? null;
+}
+
+async function findMessage(messageId: string, conversationId: string) {
+  const [message] = await db
+    .select()
+    .from(directMessages)
+    .where(
+      and(
+        eq(directMessages.id, messageId),
+        eq(directMessages.conversationId, conversationId),
+        isNull(directMessages.deletedAt),
+      ),
+    )
+    .limit(1);
+  return message ?? null;
+}
+
 const startSchema = z.object({
   recipientId: z.string().uuid(),
   content: z.string().min(1).max(1000),
@@ -99,17 +128,7 @@ messagesRouter.get('/:conversationId', async (req: AuthRequest, res) => {
   const conversationId = req.params.conversationId as string;
 
   try {
-    const [conv] = await db
-      .select()
-      .from(conversations)
-      .where(
-        and(
-          eq(conversations.id, conversationId),
-          or(eq(conversations.userAId, userId), eq(conversations.userBId, userId)),
-        ),
-      )
-      .limit(1);
-
+    const conv = await findConversation(conversationId, userId);
     if (!conv) return res.status(404).json({ message: 'Conversa não encontrada' });
 
     const messages = await db
@@ -149,17 +168,7 @@ messagesRouter.post('/:conversationId', async (req: AuthRequest, res) => {
   const conversationId = req.params.conversationId as string;
 
   try {
-    const [conv] = await db
-      .select()
-      .from(conversations)
-      .where(
-        and(
-          eq(conversations.id, conversationId),
-          or(eq(conversations.userAId, userId), eq(conversations.userBId, userId)),
-        ),
-      )
-      .limit(1);
-
+    const conv = await findConversation(conversationId, userId);
     if (!conv) return res.status(404).json({ message: 'Conversa não encontrada' });
 
     const [message] = await db
@@ -181,22 +190,10 @@ messagesRouter.patch('/:conversationId/:messageId', async (req: AuthRequest, res
   }
 
   const userId = req.userId!;
-  const messageId = req.params.messageId as string;
-  const conversationId = req.params.conversationId as string;
+  const { messageId, conversationId } = req.params as Record<string, string>;
 
   try {
-    const [message] = await db
-      .select()
-      .from(directMessages)
-      .where(
-        and(
-          eq(directMessages.id, messageId),
-          eq(directMessages.conversationId, conversationId),
-          isNull(directMessages.deletedAt),
-        ),
-      )
-      .limit(1);
-
+    const message = await findMessage(messageId, conversationId);
     if (!message) return res.status(404).json({ message: 'Mensagem não encontrada' });
     if (message.senderId !== userId) return res.status(403).json({ message: 'Sem permissão' });
 
@@ -215,22 +212,10 @@ messagesRouter.patch('/:conversationId/:messageId', async (req: AuthRequest, res
 // UC-28 Excluir mensagem (soft delete pelo remetente)
 messagesRouter.delete('/:conversationId/:messageId', async (req: AuthRequest, res) => {
   const userId = req.userId!;
-  const messageId = req.params.messageId as string;
-  const conversationId = req.params.conversationId as string;
+  const { messageId, conversationId } = req.params as Record<string, string>;
 
   try {
-    const [message] = await db
-      .select()
-      .from(directMessages)
-      .where(
-        and(
-          eq(directMessages.id, messageId),
-          eq(directMessages.conversationId, conversationId),
-          isNull(directMessages.deletedAt),
-        ),
-      )
-      .limit(1);
-
+    const message = await findMessage(messageId, conversationId);
     if (!message) return res.status(404).json({ message: 'Mensagem não encontrada' });
     if (message.senderId !== userId) return res.status(403).json({ message: 'Sem permissão' });
 

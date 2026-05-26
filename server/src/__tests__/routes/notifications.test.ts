@@ -1,21 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
+import { chain } from '../helpers/testChain';
 
 const { mockDb, push, clear, UID, NOTIF_ID } = vi.hoisted(() => {
   const UID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
   const NOTIF_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
   const q: unknown[][] = [];
-
-  function chain(r: unknown[] = []): any {
-    const p = Promise.resolve(r);
-    const o: any = {};
-    for (const m of ['from','where','innerJoin','leftJoin','orderBy','limit','offset','set','values','returning'])
-      o[m] = () => o;
-    o.then = p.then.bind(p);
-    o.catch = p.catch.bind(p);
-    o.finally = p.finally.bind(p);
-    return o;
-  }
 
   return {
     mockDb: { select: () => chain(q.shift()), insert: () => chain(q.shift()), update: () => chain(q.shift()), delete: () => chain(q.shift()) },
