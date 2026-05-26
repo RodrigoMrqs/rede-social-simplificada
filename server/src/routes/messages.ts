@@ -173,6 +173,45 @@ messagesRouter.post('/:conversationId', async (req: AuthRequest, res) => {
   }
 });
 
+// UC-27 Editar mensagem (somente remetente)
+messagesRouter.patch('/:conversationId/:messageId', async (req: AuthRequest, res) => {
+  const parse = messageSchema.safeParse(req.body);
+  if (!parse.success) {
+    return res.status(400).json({ message: 'Dados inválidos', errors: parse.error.errors });
+  }
+
+  const userId = req.userId!;
+  const messageId = req.params.messageId as string;
+  const conversationId = req.params.conversationId as string;
+
+  try {
+    const [message] = await db
+      .select()
+      .from(directMessages)
+      .where(
+        and(
+          eq(directMessages.id, messageId),
+          eq(directMessages.conversationId, conversationId),
+          isNull(directMessages.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!message) return res.status(404).json({ message: 'Mensagem não encontrada' });
+    if (message.senderId !== userId) return res.status(403).json({ message: 'Sem permissão' });
+
+    const [updated] = await db
+      .update(directMessages)
+      .set({ content: parse.data.content })
+      .where(eq(directMessages.id, messageId))
+      .returning();
+
+    return res.json(updated);
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
 // UC-28 Excluir mensagem (soft delete pelo remetente)
 messagesRouter.delete('/:conversationId/:messageId', async (req: AuthRequest, res) => {
   const userId = req.userId!;

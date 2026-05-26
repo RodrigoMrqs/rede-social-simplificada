@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { userService } from '@/services/userService';
@@ -14,14 +14,21 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [notificationPreferences, setNotificationPreferences] = useState({
-    followNotifications: true,
-    likeNotifications: true,
-    commentNotifications: true,
-    repostNotifications: true,
+    notifyFollow: true,
+    notifyLike: true,
+    notifyComment: true,
+    notifyRepost: true,
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!session?.token) return;
+    userService.getNotificationPreferences(session.token)
+      .then((prefs) => setNotificationPreferences(prefs))
+      .catch(() => {});
+  }, [session?.token]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +47,7 @@ export default function SettingsPage() {
 
     setLoading(true);
     try {
+      await authService.changePassword(session!.token, currentPassword, newPassword);
       setSuccess('Senha alterada com sucesso!');
       setCurrentPassword('');
       setNewPassword('');
@@ -263,10 +271,10 @@ export default function SettingsPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {[
-              { key: 'followNotifications', label: 'Notificações de Seguidor' },
-              { key: 'likeNotifications', label: 'Notificações de Curtida' },
-              { key: 'commentNotifications', label: 'Notificações de Comentário' },
-              { key: 'repostNotifications', label: 'Notificações de Repost' },
+              { key: 'notifyFollow', label: 'Notificações de Seguidor' },
+              { key: 'notifyLike', label: 'Notificações de Curtida' },
+              { key: 'notifyComment', label: 'Notificações de Comentário' },
+              { key: 'notifyRepost', label: 'Notificações de Repost' },
             ].map(({ key, label }) => (
               <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
                 <input
@@ -286,19 +294,33 @@ export default function SettingsPage() {
           </div>
 
           <button
+            disabled={loading}
+            onClick={async () => {
+              setError('');
+              setSuccess('');
+              setLoading(true);
+              try {
+                await userService.updateNotificationPreferences(session!.token, notificationPreferences);
+                setSuccess('Preferências salvas com sucesso!');
+              } catch (err) {
+                setError(err instanceof Error ? err.message : 'Erro ao salvar preferências');
+              } finally {
+                setLoading(false);
+              }
+            }}
             style={{
               marginTop: '2rem',
               padding: '0.75rem 1.5rem',
-              backgroundColor: '#1da1f2',
+              backgroundColor: loading ? '#ccc' : '#1da1f2',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
               fontSize: '1rem',
               fontWeight: 600,
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
             }}
           >
-            Salvar Preferências
+            {loading ? 'Salvando...' : 'Salvar Preferências'}
           </button>
         </div>
       )}

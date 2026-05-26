@@ -24,4 +24,12 @@ export const authService = {
   async logout(token: string): Promise<void> {
     return request<void>('/auth/logout', { method: 'POST', token });
   },
+
+  async changePassword(token: string, currentPassword: string, newPassword: string): Promise<void> {
+    return request<void>('/users/me/password', {
+      method: 'PATCH',
+      body: { currentPassword, newPassword },
+      token,
+    });
+  },
 };

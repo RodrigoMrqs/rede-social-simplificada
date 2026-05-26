@@ -42,6 +42,20 @@ const updateProfileSchema = z
   })
   .partial();
 
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8).max(72),
+});
+
+const updatePreferencesSchema = z
+  .object({
+    notifyFollow: z.boolean(),
+    notifyLike: z.boolean(),
+    notifyComment: z.boolean(),
+    notifyRepost: z.boolean(),
+  })
+  .partial();
+
 // UC-05 Editar perfil — antes de `/:userId` para não ser capturada pelo param
 usersRouter.patch('/me', async (req: AuthRequest, res) => {
   const parse = updateProfileSchema.safeParse(req.body);
@@ -99,6 +113,94 @@ usersRouter.delete('/me', async (req: AuthRequest, res) => {
     await revokeAllSessions(req.userId!);
 
     return res.json({ message: 'Conta excluída' });
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+// UC-06 Alterar senha
+usersRouter.patch('/me/password', async (req: AuthRequest, res) => {
+  const parse = changePasswordSchema.safeParse(req.body);
+  if (!parse.success) {
+    return res.status(400).json({ message: 'Dados inválidos', errors: parse.error.errors });
+  }
+
+  const { currentPassword, newPassword } = parse.data;
+
+  try {
+    const [account] = await db
+      .select({ passwordHash: users.passwordHash })
+      .from(users)
+      .where(and(eq(users.id, req.userId!), isNull(users.deletedAt)))
+      .limit(1);
+
+    if (!account || !(await bcrypt.compare(currentPassword, account.passwordHash))) {
+      return res.status(401).json({ message: 'Senha atual incorreta' });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await db
+      .update(users)
+      .set({ passwordHash })
+      .where(and(eq(users.id, req.userId!), isNull(users.deletedAt)));
+
+    return res.json({ message: 'Senha alterada com sucesso' });
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+// UC-06 Buscar preferências de notificação
+usersRouter.get('/me/preferences', async (req: AuthRequest, res) => {
+  try {
+    const [prefs] = await db
+      .select({
+        notifyFollow: notificationPreferences.notifyFollow,
+        notifyLike: notificationPreferences.notifyLike,
+        notifyComment: notificationPreferences.notifyComment,
+        notifyRepost: notificationPreferences.notifyRepost,
+      })
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, req.userId!))
+      .limit(1);
+
+    if (!prefs) return res.status(404).json({ message: 'Preferências não encontradas' });
+    return res.json(prefs);
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+// UC-06 Atualizar preferências de notificação
+usersRouter.patch('/me/preferences', async (req: AuthRequest, res) => {
+  const parse = updatePreferencesSchema.safeParse(req.body);
+  if (!parse.success) {
+    return res.status(400).json({ message: 'Dados inválidos', errors: parse.error.errors });
+  }
+
+  const data = parse.data;
+  if (Object.keys(data).length === 0) {
+    return res.status(400).json({ message: 'Nenhum campo para atualizar' });
+  }
+
+  try {
+    await db
+      .update(notificationPreferences)
+      .set(data)
+      .where(eq(notificationPreferences.userId, req.userId!));
+
+    const [prefs] = await db
+      .select({
+        notifyFollow: notificationPreferences.notifyFollow,
+        notifyLike: notificationPreferences.notifyLike,
+        notifyComment: notificationPreferences.notifyComment,
+        notifyRepost: notificationPreferences.notifyRepost,
+      })
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, req.userId!))
+      .limit(1);
+
+    return res.json(prefs);
   } catch {
     return res.status(500).json({ message: 'Erro interno' });
   }

@@ -40,4 +40,20 @@ export const userService = {
     if (cursor) params.set('cursor', cursor);
     return request(`/search/users?${params}`, { token });
   },
+
+  async getNotificationPreferences(token: string): Promise<{
+    notifyFollow: boolean;
+    notifyLike: boolean;
+    notifyComment: boolean;
+    notifyRepost: boolean;
+  }> {
+    return request('/users/me/preferences', { token });
+  },
+
+  async updateNotificationPreferences(
+    token: string,
+    prefs: Partial<{ notifyFollow: boolean; notifyLike: boolean; notifyComment: boolean; notifyRepost: boolean }>,
+  ): Promise<{ notifyFollow: boolean; notifyLike: boolean; notifyComment: boolean; notifyRepost: boolean }> {
+    return request('/users/me/preferences', { method: 'PATCH', body: prefs, token });
+  },
 };

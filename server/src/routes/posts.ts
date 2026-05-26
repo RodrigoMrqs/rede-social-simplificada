@@ -63,6 +63,38 @@ postsRouter.get('/:postId', async (_req: AuthRequest, res) => {
   res.status(501).json({ message: 'Not implemented' });
 });
 
+// UC-11 Editar post (somente autor)
+postsRouter.patch('/:postId', async (req: AuthRequest, res) => {
+  const postId = req.params.postId as string;
+  const userId = req.userId!;
+
+  const parse = contentSchema.safeParse(req.body);
+  if (!parse.success) {
+    return res.status(400).json({ message: 'Conteúdo inválido', errors: parse.error.errors });
+  }
+
+  try {
+    const [post] = await db
+      .select()
+      .from(posts)
+      .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
+      .limit(1);
+
+    if (!post) return res.status(404).json({ message: 'Post não encontrado' });
+    if (post.authorId !== userId) return res.status(403).json({ message: 'Sem permissão' });
+
+    const [updated] = await db
+      .update(posts)
+      .set({ content: parse.data.content })
+      .where(eq(posts.id, postId))
+      .returning();
+
+    return res.json(updated);
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
 // UC-13 Curtir
 postsRouter.post('/:postId/like', async (req: AuthRequest, res) => {
   const postId = req.params.postId as string;

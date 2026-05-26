@@ -38,11 +38,11 @@
 - [x] `DELETE /messages/:conversationId/:messageId` — UC-28 (soft delete de mensagem)
 
 ### Testes end-to-end
-- [ ] Instalar e configurar **Playwright** no workspace `web`
-- [ ] Escrever teste E2E para fluxo de cadastro e login
-- [ ] Escrever teste E2E para publicar post e visualizar no feed
-- [ ] Escrever teste E2E para curtir e descurtir post
-- [ ] Escrever teste E2E para seguir usuário
+- [x] Instalar e configurar **Playwright** no workspace `web`
+- [x] Escrever teste E2E para fluxo de cadastro e login
+- [x] Escrever teste E2E para publicar post e visualizar no feed
+- [x] Escrever teste E2E para curtir e descurtir post
+- [x] Escrever teste E2E para seguir usuário
 
 ### Documentação de casos de teste
 - [x] Ampliar `docs/casos-de-teste.md` com CTs dos UCs restantes: UC-13 (curtir), UC-16 (feed), UC-19/22 (admin), UC-20 (moderar), UC-21 (sanção), UC-25–28 (mensagens)
@@ -61,18 +61,18 @@
 **Responsável:** Nathalia Gama
 
 ### Telas a implementar
-- [ ] `LoginPage` (`/login`) — formulário funcional conectado ao `authService.login()` (UC-02)
-- [ ] `RegisterPage` (`/register`) — formulário funcional conectado ao `authService.register()` (UC-01)
-- [ ] `NewPostPage` (`/post/new`) — formulário conectado ao `postService.createPost()` (UC-11)
-- [ ] `PostPage` (`/post/[id]`) — exibir post + comentários, formulário de novo comentário (UC-14)
-- [ ] `ProfilePage` (`/profile/[username]`) — perfil, botão seguir/deixar de seguir (UC-04, UC-08, UC-09)
-- [ ] `SearchPage` (`/search`) — campo de busca conectado a `GET /search` (UC-18)
-- [ ] `NotificationsPage` (`/notifications`) — listagem com badge de não lidas (UC-17)
-- [ ] `SettingsPage` (`/settings`) — alterar senha e preferências de notificação (UC-06)
-- [ ] `MessagesPage` (`/messages`) — listagem de conversas (UC-26)
-- [ ] `ConversationPage` (`/messages/[conversationId]`) — troca de mensagens (UC-25, UC-27, UC-28)
-- [ ] `AdminDashboardPage` (`/admin/dashboard`) — métricas e lista de posts (UC-19, UC-22)
-- [ ] `AdminModerationPage` (`/admin/moderation`) — moderar posts e usuários (UC-20, UC-21)
+- [x] `LoginPage` (`/login`) — formulário funcional conectado ao `authService.login()` (UC-02)
+- [x] `RegisterPage` (`/register`) — formulário funcional conectado ao `authService.register()` (UC-01)
+- [x] `NewPostPage` (`/post/new`) — formulário conectado ao `postService.createPost()` (UC-11)
+- [x] `PostPage` (`/post/[id]`) — exibir post + comentários, formulário de novo comentário (UC-14)
+- [x] `ProfilePage` (`/profile/[username]`) — perfil, botão seguir/deixar de seguir (UC-04, UC-08, UC-09)
+- [x] `SearchPage` (`/search`) — campo de busca conectado a `GET /search` (UC-18)
+- [x] `NotificationsPage` (`/notifications`) — listagem com badge de não lidas (UC-17)
+- [x] `SettingsPage` (`/settings`) — alterar senha e preferências de notificação (UC-06)
+- [x] `MessagesPage` (`/messages`) — listagem de conversas (UC-26)
+- [x] `ConversationPage` (`/messages/[conversationId]`) — troca de mensagens (UC-25, UC-27, UC-28)
+- [x] `AdminDashboardPage` (`/admin/dashboard`) — métricas e lista de posts (UC-19, UC-22)
+- [x] `AdminModerationPage` (`/admin/moderation`) — moderar posts e usuários (UC-20, UC-21)
 
 ---
 

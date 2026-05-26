@@ -1175,6 +1175,299 @@
 
 ---
 
+---
+
+## UC-11 — Editar Post
+
+### CT-91 — Editar post com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-91 |
+| **Objetivo** | Verificar que PATCH /posts/:postId atualiza o conteúdo e retorna 200 |
+| **Pré-condições** | Usuário autenticado; post existe e pertence ao usuário |
+| **Dados de entrada** | `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId com novo content |
+| **Resultado esperado** | HTTP 200 com post atualizado |
+| **Resultado obtido** | HTTP 200 — content atualizado |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-92 — Rejeitar edição de post alheio
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-92 |
+| **Objetivo** | Verificar que usuário não pode editar post de outro autor |
+| **Pré-condições** | Usuário autenticado; post pertence a outro usuário |
+| **Dados de entrada** | `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId |
+| **Resultado esperado** | HTTP 403 |
+| **Resultado obtido** | HTTP 403 — edição negada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-93 — Retornar 404 ao editar post inexistente
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-93 |
+| **Objetivo** | Verificar tratamento de post não encontrado |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `postId` inexistente; `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-94 — Rejeitar content vazio na edição de post
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-94 |
+| **Objetivo** | Verificar validação de content obrigatório |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "content": "" }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId com content vazio |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-95 — Rejeitar content acima de 280 caracteres na edição de post
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-95 |
+| **Objetivo** | Verificar validação de tamanho máximo |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "content": "a".repeat(281) }` |
+| **Passos de execução** | 1. Enviar PATCH /posts/:postId com content excedido |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+## UC-27 — Editar Mensagem Direta
+
+### CT-96 — Editar mensagem com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-96 |
+| **Objetivo** | Verificar que PATCH /messages/:conversationId/:messageId atualiza o conteúdo |
+| **Pré-condições** | Usuário autenticado; mensagem existe e pertence ao usuário |
+| **Dados de entrada** | `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /messages/:conversationId/:messageId com novo content |
+| **Resultado esperado** | HTTP 200 com mensagem atualizada |
+| **Resultado obtido** | HTTP 200 — content atualizado |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-97 — Rejeitar edição de mensagem alheia
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-97 |
+| **Objetivo** | Verificar que usuário não pode editar mensagem de outro remetente |
+| **Pré-condições** | Usuário autenticado; mensagem pertence a outro usuário |
+| **Dados de entrada** | `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /messages/:conversationId/:messageId |
+| **Resultado esperado** | HTTP 403 |
+| **Resultado obtido** | HTTP 403 — edição negada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-98 — Retornar 404 ao editar mensagem inexistente ou deletada
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-98 |
+| **Objetivo** | Verificar tratamento de mensagem não encontrada |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `messageId` inexistente; `{ "content": "Editado" }` |
+| **Passos de execução** | 1. Enviar PATCH /messages/:conversationId/:messageId |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-99 — Rejeitar content vazio na edição de mensagem
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-99 |
+| **Objetivo** | Verificar validação de content obrigatório |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "content": "" }` |
+| **Passos de execução** | 1. Enviar PATCH /messages/:conversationId/:messageId com content vazio |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-100 — Rejeitar content acima de 1000 caracteres na edição de mensagem
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-100 |
+| **Objetivo** | Verificar validação de tamanho máximo de mensagem |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "content": "a".repeat(1001) }` |
+| **Passos de execução** | 1. Enviar PATCH /messages/:conversationId/:messageId com content excedido |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+## UC-06 — Configurações (Senha e Preferências)
+
+### CT-82 — Alterar senha com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-82 |
+| **Objetivo** | Verificar que PATCH /users/me/password altera a senha quando credenciais são válidas |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "currentPassword": "senha123", "newPassword": "novasenha456" }` |
+| **Passos de execução** | 1. Enviar PATCH /users/me/password com senhas válidas |
+| **Resultado esperado** | HTTP 200 com mensagem de confirmação |
+| **Resultado obtido** | HTTP 200 — senha alterada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-83 — Rejeitar alteração com senha atual incorreta
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-83 |
+| **Objetivo** | Verificar que senha atual errada resulta em 401 |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "currentPassword": "errada", "newPassword": "novasenha456" }` |
+| **Passos de execução** | 1. Enviar PATCH /users/me/password com currentPassword incorreta |
+| **Resultado esperado** | HTTP 401 |
+| **Resultado obtido** | HTTP 401 — senha atual incorreta |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-84 — Rejeitar nova senha com menos de 8 caracteres
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-84 |
+| **Objetivo** | Verificar validação de tamanho mínimo da nova senha |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "currentPassword": "senha123", "newPassword": "curta" }` |
+| **Passos de execução** | 1. Enviar PATCH /users/me/password com newPassword curta |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-85 — Rejeitar quando currentPassword está ausente
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-85 |
+| **Objetivo** | Verificar que campo obrigatório ausente é rejeitado |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "newPassword": "novasenha456" }` (sem currentPassword) |
+| **Passos de execução** | 1. Enviar PATCH /users/me/password sem currentPassword |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-86 — Retornar preferências de notificação com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-86 |
+| **Objetivo** | Verificar que GET /users/me/preferences retorna os campos de preferência |
+| **Pré-condições** | Usuário autenticado; preferências existem |
+| **Dados de entrada** | — |
+| **Passos de execução** | 1. Enviar GET /users/me/preferences |
+| **Resultado esperado** | HTTP 200 com campos `notifyFollow`, `notifyLike`, `notifyComment`, `notifyRepost` |
+| **Resultado obtido** | HTTP 200 — preferências retornadas |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-87 — Retornar 404 quando preferências não existem
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-87 |
+| **Objetivo** | Verificar tratamento de registro ausente em notification_preferences |
+| **Pré-condições** | Usuário autenticado; sem registro de preferências |
+| **Dados de entrada** | — |
+| **Passos de execução** | 1. Enviar GET /users/me/preferences |
+| **Resultado esperado** | HTTP 404 |
+| **Resultado obtido** | HTTP 404 |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-88 — Atualizar preferências de notificação com sucesso
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-88 |
+| **Objetivo** | Verificar que PATCH /users/me/preferences persiste a alteração e retorna estado atualizado |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "notifyFollow": false }` |
+| **Passos de execução** | 1. Enviar PATCH /users/me/preferences com um campo alterado |
+| **Resultado esperado** | HTTP 200 com `notifyFollow: false` no retorno |
+| **Resultado obtido** | HTTP 200 — preferência atualizada |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-89 — Rejeitar atualização com body vazio
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-89 |
+| **Objetivo** | Verificar que body sem campos resulta em 400 |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{}` |
+| **Passos de execução** | 1. Enviar PATCH /users/me/preferences com body vazio |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — nenhum campo para atualizar |
+| **Status** | ✅ Passou |
+
+---
+
+### CT-90 — Rejeitar atualização com valor não booleano
+
+| Campo | Descrição |
+|---|---|
+| **Identificador** | CT-90 |
+| **Objetivo** | Verificar validação de tipo nos campos de preferência |
+| **Pré-condições** | Usuário autenticado |
+| **Dados de entrada** | `{ "notifyFollow": "sim" }` |
+| **Passos de execução** | 1. Enviar PATCH /users/me/preferences com string em lugar de boolean |
+| **Resultado esperado** | HTTP 400 |
+| **Resultado obtido** | HTTP 400 — validação rejeitou tipo inválido |
+| **Status** | ✅ Passou |
+
+---
+
 ## Resumo de Cobertura
 
 | UC | Total de CTs | Passou | Falhou | Pendente |
@@ -1182,8 +1475,9 @@
 | UC-01 Cadastro | 6 | 6 | 0 | 0 |
 | UC-02 Login | 4 | 4 | 0 | 0 |
 | UC-03 Logout | 1 | 1 | 0 | 0 |
+| UC-06 Configurações | 9 | 9 | 0 | 0 |
 | UC-10 Seguidores/Seguindo | 7 | 7 | 0 | 0 |
-| UC-11 Publicar | 3 | 3 | 0 | 0 |
+| UC-11 Publicar / Editar Post | 8 | 8 | 0 | 0 |
 | UC-12 Excluir Post | 3 | 3 | 0 | 0 |
 | UC-13 Curtir/Descurtir | 3 | 3 | 0 | 0 |
 | UC-14 Comentar | 5 | 5 | 0 | 0 |
@@ -1198,6 +1492,6 @@
 | UC-24 Excluir Comentário | 3 | 3 | 0 | 0 |
 | UC-25 Enviar Mensagem | 3 | 3 | 0 | 0 |
 | UC-26 Listar Conversas | 1 | 1 | 0 | 0 |
-| UC-27 Ler Conversa | 2 | 2 | 0 | 0 |
+| UC-27 Ler / Editar Mensagem | 7 | 7 | 0 | 0 |
 | UC-28 Excluir Mensagem | 2 | 2 | 0 | 0 |
-| **Total** | **78** | **78** | **0** | **0** |
+| **Total** | **97** | **97** | **0** | **0** |
