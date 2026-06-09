@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    exclude: ['e2e/**', 'node_modules/**'],
     env: {
       NEXT_PUBLIC_API_URL: 'http://localhost:3001',
     },

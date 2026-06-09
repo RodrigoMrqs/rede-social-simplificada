@@ -38,11 +38,12 @@ test.describe('E2E — Seguir e Deixar de Seguir', () => {
     await page.goto(`/profile/${userB.username}`);
     await page.waitForLoadState('networkidle');
 
-    const followButton = page.getByRole('button', { name: 'Seguir' });
+    const followButton = page.getByTestId('follow-btn');
     await expect(followButton).toBeVisible({ timeout: 8000 });
+    await expect(followButton).toHaveText('Seguir');
     await followButton.click();
 
-    await expect(page.getByRole('button', { name: 'Seguindo' })).toBeVisible({ timeout: 8000 });
+    await expect(followButton).toHaveText('Seguindo', { timeout: 8000 });
   });
 
   test('E2E-09 — deixar de seguir muda botão de volta para "Seguir"', async ({ page, request }) => {
@@ -56,19 +57,18 @@ test.describe('E2E — Seguir e Deixar de Seguir', () => {
     await page.goto(`/profile/${userB.username}`);
     await page.waitForLoadState('networkidle');
 
-    // Pode estar Seguindo ou Seguir dependendo da ordem de execução
-    const seguindoBtn = page.getByRole('button', { name: 'Seguindo' });
-    const seguirBtn = page.getByRole('button', { name: 'Seguir' });
+    const followBtn = page.getByTestId('follow-btn');
+    await expect(followBtn).toBeVisible({ timeout: 8000 });
 
-    if (await seguindoBtn.isVisible()) {
-      await seguindoBtn.click();
-      await expect(seguirBtn).toBeVisible({ timeout: 8000 });
+    if (await followBtn.getByText('Seguindo').isVisible()) {
+      await followBtn.click();
+      await expect(followBtn).toHaveText('Seguir', { timeout: 8000 });
     } else {
       // Seguir primeiro, depois deixar de seguir
-      await seguirBtn.click();
-      await expect(seguindoBtn).toBeVisible({ timeout: 8000 });
-      await seguindoBtn.click();
-      await expect(seguirBtn).toBeVisible({ timeout: 8000 });
+      await followBtn.click();
+      await expect(followBtn).toHaveText('Seguindo', { timeout: 8000 });
+      await followBtn.click();
+      await expect(followBtn).toHaveText('Seguir', { timeout: 8000 });
     }
   });
 });

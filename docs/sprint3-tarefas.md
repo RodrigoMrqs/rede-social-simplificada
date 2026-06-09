@@ -19,10 +19,8 @@
 - [x] `GET /notifications` — UC-17 (listar notificações do usuário autenticado)
 - [x] `PATCH /notifications/:id/read` — UC-17 (marcar como lida)
 
-### Cobertura e E2E
-- [ ] Gerar relatório de cobertura do backend: `cd server && npm run test:coverage`
-- [ ] Gerar relatório de cobertura do frontend: `cd web && npm run test:coverage`
-- [ ] Executar testes E2E ao vivo e confirmar que todos passam: `cd web && npm run test:e2e`
+
+
 
 ---
 

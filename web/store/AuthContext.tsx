@@ -8,12 +8,14 @@ const SESSION_KEY = 'agora_session';
 type AuthContextType = {
   session: Session | null;
   setSession: (session: Session | null) => void;
+  isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSessionState] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     try {
@@ -21,6 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (stored) setSessionState(JSON.parse(stored));
     } catch {
       // localStorage indisponível ou dado corrompido
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -35,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, setSession }}>
+    <AuthContext.Provider value={{ session, setSession, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

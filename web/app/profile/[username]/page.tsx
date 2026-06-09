@@ -10,7 +10,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const params = useParams();
   const username = params.username as string;
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [followers, setFollowers] = useState<User[]>([]);
   const [following, setFollowing] = useState<User[]>([]);
@@ -20,12 +20,13 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'posts' | 'followers' | 'following'>('posts');
 
   useEffect(() => {
+    if (authLoading) return;
     if (!session?.token) {
       router.push('/login');
       return;
     }
     loadProfile();
-  }, [username, session?.token, router]);
+  }, [username, session?.token, authLoading, router]);
 
   const loadProfile = async () => {
     try {
@@ -36,13 +37,13 @@ export default function ProfilePage() {
       });
       const userData = await response.json();
       setUser(userData);
-      setIsFollowing(userData.isFollowedByMe || false);
+      setIsFollowing(userData.isFollowing || false);
 
-      const followersRes = await userService.getFollowers(session!.token, userData.id);
-      setFollowers(followersRes.items);
+      const followersRes = await userService.getFollowers(session!.token, userData.id) as unknown as User[];
+      setFollowers(followersRes);
 
-      const followingRes = await userService.getFollowing(session!.token, userData.id);
-      setFollowing(followingRes.items);
+      const followingRes = await userService.getFollowing(session!.token, userData.id) as unknown as User[];
+      setFollowing(followingRes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar perfil');
     } finally {
@@ -65,7 +66,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (!session) return <div>Carregando...</div>;
+  if (authLoading) return <div>Carregando...</div>;
   if (loading) return <div style={{ padding: '1rem', textAlign: 'center' }}>Carregando...</div>;
   if (!user) return <div style={{ padding: '1rem', textAlign: 'center', color: '#666' }}>Usuário não encontrado</div>;
 
@@ -100,6 +101,7 @@ export default function ProfilePage() {
             </div>
             {!isOwnProfile && (
               <button
+                data-testid="follow-btn"
                 onClick={handleFollow}
                 style={{
                   padding: '0.5rem 1rem',
