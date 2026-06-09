@@ -159,6 +159,59 @@ cd server && npm run test:coverage
 cd web && npm run test:coverage
 ```
 
+---
+
+## Testes E2E
+
+Testes de ponta a ponta (End-to-End) usando **Playwright** para validar fluxos completos da aplicação no navegador real.
+
+### Pré-requisitos
+
+- Backend rodando em `http://localhost:3001`
+- Frontend rodando em `http://localhost:3000`
+- Banco de dados populado com dados de seed
+
+### Rodar testes E2E
+
+```bash
+cd web
+npm run test:e2e
+```
+
+### Rodar testes E2E no modo UI (com interface visual)
+
+```bash
+cd web
+npm run test:e2e:ui
+```
+
+### Visualizar relatório de testes
+
+```bash
+cd web
+npm run test:e2e:report
+```
+
+### Casos de teste E2E
+
+Os testes cobrem os principais fluxos da plataforma:
+
+#### Autenticação (auth.spec.ts)
+- **E2E-01** — Cadastro via formulário redireciona para `/feed`
+- **E2E-02** — Login com credenciais válidas redireciona para `/feed`
+- **E2E-03** — Login com senha incorreta exibe mensagem de erro
+- **E2E-04** — Cadastro com username já existente exibe erro
+
+#### Publicação de Posts (posts.spec.ts)
+- **E2E-05** — Publicar post via formulário aparece no feed
+- **E2E-06** — Curtir post incrementa contador
+- **E2E-07** — Descurtir post decrementa contador
+
+#### Seguir Usuários (follow.spec.ts)
+- **E2E-08** — Seguir usuário muda botão para "Seguindo"
+- **E2E-09** — Deixar de seguir muda botão de volta para "Seguir"
+- **Seguindo** — seguir/deixar de seguir usuários
+
 Os relatórios são gerados em `coverage/` dentro de cada pasta.
 
 ---
