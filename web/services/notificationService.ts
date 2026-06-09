@@ -1,10 +1,9 @@
 import { request } from './api';
-import { Notification, PaginatedResponse } from '@/types';
+import { Notification } from '@/types';
 
 export const notificationService = {
-  async getNotifications(token: string, cursor?: string): Promise<PaginatedResponse<Notification>> {
-    const query = cursor ? `?cursor=${cursor}` : '';
-    return request(`/notifications${query}`, { token });
+  async getNotifications(token: string, page = 1): Promise<Notification[]> {
+    return request(`/notifications?page=${page}`, { token });
   },
 
   async getUnreadCount(token: string): Promise<{ count: number }> {

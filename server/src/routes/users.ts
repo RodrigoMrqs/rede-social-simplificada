@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, lt, sql } from 'drizzle-orm';
 import { db } from '../db';
 import {
   users,
   follows,
   notifications,
   notificationPreferences,
+  posts,
 } from '../../../db/schema';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { revokeAllSessions } from '../lib/auth';
@@ -344,6 +345,59 @@ usersRouter.get('/:userId/following', async (req: AuthRequest, res) => {
       .offset(offset);
 
     return res.json(rows.map((row) => ({ ...row, isMe: row.id === req.userId })));
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+// UC-04 Posts de um usuário específico
+usersRouter.get('/:userId/posts', async (req: AuthRequest, res) => {
+  const param = req.params.userId as string;
+  const cursor = req.query.cursor as string | undefined;
+  const PAGE_SIZE = 20;
+
+  try {
+    const targetId = await resolveActiveUserId(param);
+    if (!targetId) return res.status(404).json({ message: 'Usuário não encontrado' });
+
+    const userId = req.userId ?? '00000000-0000-0000-0000-000000000000';
+    const conditions: any[] = [
+      eq(posts.authorId, targetId),
+      isNull(posts.deletedAt),
+      isNull(posts.hiddenAt),
+    ];
+    if (cursor) conditions.push(lt(posts.createdAt, new Date(cursor)));
+
+    const rows = await db
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        repostOfId: posts.repostOfId,
+        isRepostSimple: posts.isRepostSimple,
+        author: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl,
+        },
+        likesCount: sql<number>`(SELECT COUNT(*) FROM post_likes WHERE post_id = ${posts.id})::int`,
+        likedByMe: sql<boolean>`EXISTS(SELECT 1 FROM post_likes WHERE post_id = ${posts.id} AND user_id = ${userId}::uuid)`,
+        commentsCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE post_id = ${posts.id} AND deleted_at IS NULL)::int`,
+      })
+      .from(posts)
+      .innerJoin(users, and(eq(posts.authorId, users.id), isNull(users.deletedAt)))
+      .where(and(...conditions))
+      .orderBy(desc(posts.createdAt))
+      .limit(PAGE_SIZE + 1);
+
+    const hasMore = rows.length > PAGE_SIZE;
+    const items = rows.slice(0, PAGE_SIZE);
+    return res.json({
+      items,
+      nextCursor: hasMore ? items[items.length - 1].createdAt?.toISOString() : null,
+    });
   } catch {
     return res.status(500).json({ message: 'Erro interno' });
   }

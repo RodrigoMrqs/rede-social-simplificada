@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { and, asc, desc, eq, isNull, ne, or } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db';
 import { conversations, directMessages, users } from '../../../db/schema';
@@ -65,7 +65,86 @@ messagesRouter.get('/', async (req: AuthRequest, res) => {
       .where(or(eq(conversations.userAId, userId), eq(conversations.userBId, userId)))
       .orderBy(desc(conversations.createdAt));
 
-    return res.json(convs);
+    const enriched = await Promise.all(
+      convs.map(async (conv) => {
+        const otherId = conv.userAId === userId ? conv.userBId : conv.userAId;
+
+        const [participant] = await db
+          .select({ id: users.id, username: users.username, displayName: users.displayName, avatarUrl: users.avatarUrl })
+          .from(users)
+          .where(eq(users.id, otherId))
+          .limit(1);
+
+        const [lastMessage] = await db
+          .select({ id: directMessages.id, content: directMessages.content, senderId: directMessages.senderId, createdAt: directMessages.createdAt })
+          .from(directMessages)
+          .where(and(eq(directMessages.conversationId, conv.id), isNull(directMessages.deletedAt)))
+          .orderBy(desc(directMessages.createdAt))
+          .limit(1);
+
+        const [{ count }] = await db
+          .select({ count: sql<number>`COUNT(*)::int` })
+          .from(directMessages)
+          .where(and(
+            eq(directMessages.conversationId, conv.id),
+            isNull(directMessages.readAt),
+            isNull(directMessages.deletedAt),
+            ne(directMessages.senderId, userId),
+          ));
+
+        return {
+          id: conv.id,
+          createdAt: conv.createdAt,
+          participant: participant ?? null,
+          lastMessage: lastMessage ?? null,
+          unreadCount: count ?? 0,
+        };
+      }),
+    );
+
+    return res.json(enriched);
+  } catch {
+    return res.status(500).json({ message: 'Erro interno' });
+  }
+});
+
+// Abre ou cria conversa sem enviar mensagem (usado pelo botão de DM no perfil)
+messagesRouter.post('/open', async (req: AuthRequest, res) => {
+  const parse = z.object({ recipientId: z.string().uuid() }).safeParse(req.body);
+  if (!parse.success) return res.status(400).json({ message: 'recipientId inválido' });
+
+  const userId = req.userId!;
+  const { recipientId } = parse.data;
+
+  if (recipientId === userId) {
+    return res.status(422).json({ message: 'Não é possível enviar mensagem para si mesmo' });
+  }
+
+  try {
+    const [recipient] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.id, recipientId), isNull(users.deletedAt)))
+      .limit(1);
+
+    if (!recipient) return res.status(404).json({ message: 'Usuário não encontrado' });
+
+    const { userAId, userBId } = participantOrder(userId, recipientId);
+
+    const [existing] = await db
+      .select()
+      .from(conversations)
+      .where(and(eq(conversations.userAId, userAId), eq(conversations.userBId, userBId)))
+      .limit(1);
+
+    if (existing) return res.json({ conversationId: existing.id });
+
+    const [created] = await db
+      .insert(conversations)
+      .values({ userAId, userBId })
+      .returning();
+
+    return res.status(201).json({ conversationId: created.id });
   } catch {
     return res.status(500).json({ message: 'Erro interno' });
   }

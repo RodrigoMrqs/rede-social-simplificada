@@ -10,22 +10,22 @@ export default function ConversationPage() {
   const router = useRouter();
   const params = useParams();
   const conversationId = params.conversationId as string;
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [cursor, setCursor] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!session?.token) {
       router.push('/login');
       return;
     }
     loadMessages();
-  }, [conversationId, session?.token, router]);
+  }, [conversationId, session?.token, authLoading, router]);
 
   useEffect(() => {
     scrollToBottom();
@@ -39,8 +39,7 @@ export default function ConversationPage() {
     try {
       setLoading(true);
       const response = await messageService.getMessages(session!.token, conversationId);
-      setMessages(response.items.reverse());
-      setCursor(response.nextCursor);
+      setMessages(response.messages ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar mensagens');
     } finally {

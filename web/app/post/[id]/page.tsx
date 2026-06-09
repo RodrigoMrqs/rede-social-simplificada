@@ -10,7 +10,7 @@ export default function PostPage() {
   const router = useRouter();
   const params = useParams();
   const postId = params.id as string;
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const [post, setPost] = useState<PostType & { comments: Comment[] } | null>(null);
   const [newComment, setNewComment] = useState('');
   const [error, setError] = useState('');
@@ -18,12 +18,13 @@ export default function PostPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!session?.token) {
       router.push('/login');
       return;
     }
     loadPost();
-  }, [postId, session?.token, router]);
+  }, [postId, session?.token, authLoading, router]);
 
   const loadPost = async () => {
     try {

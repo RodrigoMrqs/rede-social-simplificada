@@ -7,10 +7,10 @@ import { authService } from '@/services/authService';
 
 const NAV_ITEMS = [
   { label: 'Feed',         icon: '🏠', href: '/feed' },
-  { label: 'Busca',        icon: '🔍', href: '/feed' },
-  { label: 'Notificações', icon: '🔔', href: '/feed' },
-  { label: 'Mensagens',    icon: '✉️',  href: '/feed' },
-  { label: 'Novo Post',    icon: '✏️',  href: '/feed' },
+  { label: 'Busca',        icon: '🔍', href: '/search' },
+  { label: 'Notificações', icon: '🔔', href: '/notifications' },
+  { label: 'Mensagens',    icon: '✉️',  href: '/messages' },
+  { label: 'Novo Post',    icon: '✏️',  href: '/post/new' },
 ];
 
 type Props = {

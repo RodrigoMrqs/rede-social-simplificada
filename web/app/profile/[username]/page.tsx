@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { userService } from '@/services/userService';
-import { User } from '@/types';
+import { messageService } from '@/services/messageService';
+import { User, Post } from '@/types';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [followers, setFollowers] = useState<User[]>([]);
   const [following, setFollowing] = useState<User[]>([]);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [postsCursor, setPostsCursor] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -39,11 +42,15 @@ export default function ProfilePage() {
       setUser(userData);
       setIsFollowing(userData.isFollowing || false);
 
-      const followersRes = await userService.getFollowers(session!.token, userData.id) as unknown as User[];
+      const followersRes = await userService.getFollowers(session!.token, userData.id);
       setFollowers(followersRes);
 
-      const followingRes = await userService.getFollowing(session!.token, userData.id) as unknown as User[];
+      const followingRes = await userService.getFollowing(session!.token, userData.id);
       setFollowing(followingRes);
+
+      const postsRes = await userService.getUserPosts(session!.token, userData.id);
+      setUserPosts(postsRes.items);
+      setPostsCursor(postsRes.nextCursor);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar perfil');
     } finally {
@@ -100,22 +107,46 @@ export default function ProfilePage() {
               <p style={{ margin: 0, color: '#666' }}>@{user.username}</p>
             </div>
             {!isOwnProfile && (
-              <button
-                data-testid="follow-btn"
-                onClick={handleFollow}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: isFollowing ? '#f0f0f0' : '#1da1f2',
-                  color: isFollowing ? '#333' : 'white',
-                  border: isFollowing ? '1px solid #ddd' : 'none',
-                  borderRadius: '4px',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                {isFollowing ? 'Seguindo' : 'Seguir'}
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  data-testid="follow-btn"
+                  onClick={handleFollow}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: isFollowing ? '#f0f0f0' : '#1da1f2',
+                    color: isFollowing ? '#333' : 'white',
+                    border: isFollowing ? '1px solid #ddd' : 'none',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {isFollowing ? 'Seguindo' : 'Seguir'}
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const { conversationId } = await messageService.openConversation(session!.token, user.id);
+                      router.push(`/messages/${conversationId}`);
+                    } catch {
+                      setError('Erro ao abrir conversa');
+                    }
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#f0f0f0',
+                    color: '#333',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  ✉️ Mensagem
+                </button>
+              </div>
             )}
           </div>
 
@@ -241,8 +272,47 @@ export default function ProfilePage() {
       )}
 
       {activeTab === 'posts' && (
-        <div style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>
-          Os posts deste usuário serão exibidos aqui
+        <div>
+          {userPosts.length === 0 ? (
+            <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>Nenhum post ainda</p>
+          ) : (
+            userPosts.map((post) => (
+              <a
+                key={post.id}
+                href={`/post/${post.id}`}
+                style={{
+                  display: 'block', padding: '1rem', border: '1px solid #eee',
+                  marginBottom: '0.5rem', borderRadius: '4px', textDecoration: 'none',
+                  color: 'inherit', backgroundColor: '#fff',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9f9f9')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#fff')}
+              >
+                <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.5 }}>{post.content}</p>
+                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', color: '#888' }}>
+                  <span>❤️ {post.likesCount}</span>
+                  <span>💬 {post.commentsCount}</span>
+                  <span>{new Date(post.createdAt).toLocaleDateString('pt-BR')}</span>
+                </div>
+              </a>
+            ))
+          )}
+          {postsCursor && (
+            <button
+              onClick={async () => {
+                const res = await userService.getUserPosts(session!.token, user!.id, postsCursor);
+                setUserPosts((prev) => [...prev, ...res.items]);
+                setPostsCursor(res.nextCursor);
+              }}
+              style={{
+                width: '100%', padding: '0.75rem', backgroundColor: '#1da1f2',
+                color: 'white', border: 'none', borderRadius: '4px',
+                fontSize: '1rem', fontWeight: 600, cursor: 'pointer', marginTop: '0.5rem',
+              }}
+            >
+              Carregar mais
+            </button>
+          )}
         </div>
       )}
     </div>

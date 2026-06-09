@@ -7,7 +7,7 @@ import { Post, User } from '@/types';
 
 export default function AdminModerationPage() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [activeTab, setActiveTab] = useState<'posts' | 'users'>('posts');
@@ -16,12 +16,13 @@ export default function AdminModerationPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!session?.token) {
       router.push('/login');
       return;
     }
     loadModerationData();
-  }, [session?.token, router]);
+  }, [session?.token, authLoading, router]);
 
   const loadModerationData = async () => {
     try {

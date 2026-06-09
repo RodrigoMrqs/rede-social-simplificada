@@ -1,5 +1,5 @@
 import { request } from './api';
-import { User, PaginatedResponse } from '@/types';
+import { User } from '@/types';
 
 export const userService = {
   async getProfile(token: string, userId: string): Promise<User> {
@@ -25,20 +25,22 @@ export const userService = {
     return request<void>(`/users/${userId}/follow`, { method: 'DELETE', token });
   },
 
-  async getFollowers(token: string, userId: string, cursor?: string): Promise<PaginatedResponse<User>> {
-    const query = cursor ? `?cursor=${cursor}` : '';
-    return request(`/users/${userId}/followers${query}`, { token });
+  async getFollowers(token: string, userId: string): Promise<User[]> {
+    return request(`/users/${userId}/followers`, { token });
   },
 
-  async getFollowing(token: string, userId: string, cursor?: string): Promise<PaginatedResponse<User>> {
-    const query = cursor ? `?cursor=${cursor}` : '';
-    return request(`/users/${userId}/following${query}`, { token });
+  async getFollowing(token: string, userId: string): Promise<User[]> {
+    return request(`/users/${userId}/following`, { token });
   },
 
-  async search(token: string, q: string, cursor?: string): Promise<PaginatedResponse<User>> {
-    const params = new URLSearchParams({ q });
-    if (cursor) params.set('cursor', cursor);
-    return request(`/search/users?${params}`, { token });
+  async getUserPosts(token: string, userId: string, cursor?: string): Promise<{ items: import('@/types').Post[]; nextCursor: string | null }> {
+    const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+    return request(`/users/${userId}/posts${query}`, { token });
+  },
+
+  async search(token: string, q: string, page = 1): Promise<{ users: User[]; posts: { id: string; authorId: string; content: string; createdAt: string }[] }> {
+    const params = new URLSearchParams({ q, page: String(page) });
+    return request(`/search?${params}`, { token });
   },
 
   async getNotificationPreferences(token: string): Promise<{

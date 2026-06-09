@@ -16,19 +16,20 @@ interface DashboardMetrics {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!session?.token) {
       router.push('/login');
       return;
     }
     loadDashboard();
-  }, [session?.token, router]);
+  }, [session?.token, authLoading, router]);
 
   const loadDashboard = async () => {
     try {

@@ -13,23 +13,26 @@ export default function NotificationsPage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [cursor, setCursor] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const { isLoading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (authLoading) return;
     if (!session?.token) {
       router.push('/login');
       return;
     }
-    loadNotifications();
-    loadUnreadCount();
-  }, [session?.token, router]);
+    loadNotifications(1);
+  }, [session?.token, authLoading, router]);
 
-  const loadNotifications = async () => {
+  const loadNotifications = async (p: number, append = false) => {
     try {
       setLoading(true);
-      const response = await notificationService.getNotifications(session!.token, cursor);
-      setNotifications(cursor ? [...notifications, ...response.items] : response.items);
-      setCursor(response.nextCursor);
+      const rows = await notificationService.getNotifications(session!.token, p);
+      setNotifications(append ? (prev) => [...prev, ...rows] : rows);
+      setHasMore(rows.length === 20);
+      setPage(p);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar notificações');
     } finally {
@@ -147,9 +150,9 @@ export default function NotificationsPage() {
         </a>
       ))}
 
-      {cursor && !loading && (
+      {hasMore && !loading && (
         <button
-          onClick={loadNotifications}
+          onClick={() => loadNotifications(page + 1, true)}
           style={{
             width: '100%',
             padding: '0.75rem',

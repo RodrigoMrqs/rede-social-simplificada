@@ -1,5 +1,5 @@
 import { request } from './api';
-import { Conversation, DirectMessage, PaginatedResponse } from '@/types';
+import { Conversation, DirectMessage } from '@/types';
 
 export const messageService = {
   async getConversations(token: string): Promise<Conversation[]> {
@@ -10,9 +10,12 @@ export const messageService = {
     return request<Conversation>('/messages', { method: 'POST', body: { userId }, token });
   },
 
-  async getMessages(token: string, conversationId: string, cursor?: string): Promise<PaginatedResponse<DirectMessage>> {
-    const query = cursor ? `?cursor=${cursor}` : '';
-    return request(`/messages/${conversationId}${query}`, { token });
+  async openConversation(token: string, recipientId: string): Promise<{ conversationId: string }> {
+    return request('/messages/open', { method: 'POST', body: { recipientId }, token });
+  },
+
+  async getMessages(token: string, conversationId: string): Promise<{ conversation: Conversation; messages: DirectMessage[] }> {
+    return request(`/messages/${conversationId}`, { token });
   },
 
   async sendMessage(token: string, conversationId: string, content: string): Promise<DirectMessage> {

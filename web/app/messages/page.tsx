@@ -8,18 +8,19 @@ import { Conversation } from '@/types';
 
 export default function MessagesPage() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!session?.token) {
       router.push('/login');
       return;
     }
     loadConversations();
-  }, [session?.token, router]);
+  }, [session?.token, authLoading, router]);
 
   const loadConversations = async () => {
     try {

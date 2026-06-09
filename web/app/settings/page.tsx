@@ -8,7 +8,7 @@ import { authService } from '@/services/authService';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { session, setSession } = useAuth();
+  const { session, setSession, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'security' | 'notifications'>('security');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -24,11 +24,12 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!session?.token) return;
+    if (authLoading) return;
+    if (!session?.token) { router.push('/login'); return; }
     userService.getNotificationPreferences(session.token)
       .then((prefs) => setNotificationPreferences(prefs))
       .catch(() => {});
-  }, [session?.token]);
+  }, [session?.token, authLoading, router]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();

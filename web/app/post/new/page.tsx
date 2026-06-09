@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent, ChangeEvent } from 'react';
+import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { postService } from '@/services/postService';
@@ -9,7 +9,12 @@ const MAX_POST_LENGTH = 280;
 
 export default function NewPostPage() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!session?.token) router.push('/login');
+  }, [session?.token, authLoading, router]);
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
