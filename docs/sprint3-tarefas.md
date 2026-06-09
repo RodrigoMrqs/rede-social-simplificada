@@ -19,6 +19,11 @@
 - [x] `GET /notifications` — UC-17 (listar notificações do usuário autenticado)
 - [x] `PATCH /notifications/:id/read` — UC-17 (marcar como lida)
 
+### Cobertura e E2E
+- [ ] Gerar relatório de cobertura do backend: `cd server && npm run test:coverage`
+- [ ] Gerar relatório de cobertura do frontend: `cd web && npm run test:coverage`
+- [ ] Executar testes E2E ao vivo e confirmar que todos passam: `cd web && npm run test:e2e`
+
 ---
 
 ## Pessoa 2 — Backend: Admin, DMs, Testes e Qualidade
@@ -50,9 +55,7 @@
 
 ### Análise estática e cobertura
 - [x] Configurar **SonarQube Cloud** ou **Codacy** apontando para o repositório
-- [ ] Gerar relatório com métricas: complexidade, duplicação, code smells e vulnerabilidades
-- [ ] Gerar relatório de cobertura do backend: `cd server && npm run test:coverage`
-- [ ] Gerar relatório de cobertura do frontend: `cd web && npm run test:coverage`
+- [x] Gerar relatório com métricas: complexidade, duplicação, code smells e vulnerabilidades
 - [ ] Salvar os relatórios para apresentação
 
 ---
@@ -73,6 +76,9 @@
 - [x] `ConversationPage` (`/messages/[conversationId]`) — troca de mensagens (UC-25, UC-27, UC-28)
 - [x] `AdminDashboardPage` (`/admin/dashboard`) — métricas e lista de posts (UC-19, UC-22)
 - [x] `AdminModerationPage` (`/admin/moderation`) — moderar posts e usuários (UC-20, UC-21)
+
+### Documentação
+- [ ] Adicionar seção de testes E2E ao README: como rodar (`cd web && npm run test:e2e`) e pré-requisitos (servidores rodando)
 
 ---
 
