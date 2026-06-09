@@ -298,8 +298,11 @@ usersRouter.delete('/:userId/follow', async (req: AuthRequest, res) => {
   }
 });
 
-// UC-10 Listar seguidores
-usersRouter.get('/:userId/followers', async (req: AuthRequest, res) => {
+async function listFollowRelation(
+  req: AuthRequest,
+  res: any,
+  direction: 'followers' | 'following',
+) {
   const param = req.params.userId as string;
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
@@ -309,11 +312,16 @@ usersRouter.get('/:userId/followers', async (req: AuthRequest, res) => {
     const targetId = await resolveActiveUserId(param);
     if (!targetId) return res.status(404).json({ message: 'Usuário não encontrado' });
 
+    const joinCondition =
+      direction === 'followers'
+        ? and(eq(follows.followerId, users.id), eq(follows.followedId, targetId))
+        : and(eq(follows.followedId, users.id), eq(follows.followerId, targetId));
+
     const rows = await db
       .select(userPublicFields(req.userId!))
       .from(users)
-      .innerJoin(follows, eq(follows.followerId, users.id))
-      .where(and(eq(follows.followedId, targetId), isNull(users.deletedAt)))
+      .innerJoin(follows, joinCondition)
+      .where(isNull(users.deletedAt))
       .orderBy(asc(follows.createdAt))
       .limit(limit)
       .offset(offset);
@@ -322,33 +330,17 @@ usersRouter.get('/:userId/followers', async (req: AuthRequest, res) => {
   } catch {
     return res.status(500).json({ message: 'Erro interno' });
   }
-});
+}
+
+// UC-10 Listar seguidores
+usersRouter.get('/:userId/followers', (req: AuthRequest, res) =>
+  listFollowRelation(req, res, 'followers'),
+);
 
 // UC-10 Listar seguindo
-usersRouter.get('/:userId/following', async (req: AuthRequest, res) => {
-  const param = req.params.userId as string;
-  const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
-  const offset = (page - 1) * limit;
-
-  try {
-    const targetId = await resolveActiveUserId(param);
-    if (!targetId) return res.status(404).json({ message: 'Usuário não encontrado' });
-
-    const rows = await db
-      .select(userPublicFields(req.userId!))
-      .from(users)
-      .innerJoin(follows, eq(follows.followedId, users.id))
-      .where(and(eq(follows.followerId, targetId), isNull(users.deletedAt)))
-      .orderBy(asc(follows.createdAt))
-      .limit(limit)
-      .offset(offset);
-
-    return res.json(rows.map((row) => ({ ...row, isMe: row.id === req.userId })));
-  } catch {
-    return res.status(500).json({ message: 'Erro interno' });
-  }
-});
+usersRouter.get('/:userId/following', (req: AuthRequest, res) =>
+  listFollowRelation(req, res, 'following'),
+);
 
 // UC-04 Posts de um usuário específico
 usersRouter.get('/:userId/posts', async (req: AuthRequest, res) => {

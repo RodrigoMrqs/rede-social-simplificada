@@ -7,3 +7,5 @@ dist/
 CLAUDE.md
 .claude
 .next/
+coverage/
+**/coverage/

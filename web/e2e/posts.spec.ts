@@ -21,6 +21,17 @@ async function registerAndLogin(page: any, request: any, u = user) {
   await page.waitForURL('**/feed', { timeout: 15000 });
 }
 
+async function loginAndCreatePost(request: any, u: typeof user, content: string) {
+  const loginRes = await request.post(`${API}/auth/login`, {
+    data: { username: u.username, password: u.password },
+  });
+  const { token } = await loginRes.json();
+  await request.post(`${API}/posts`, {
+    data: { content },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 test.describe('E2E — Publicar Post e Curtir', () => {
   test('E2E-05 — publicar post via formulário aparece no feed', async ({ page, request }) => {
     await registerAndLogin(page, request);
@@ -42,16 +53,7 @@ test.describe('E2E — Publicar Post e Curtir', () => {
       password: 'senha12345',
     };
     await registerAndLogin(page, request, u);
-
-    // Criar post via API para garantir que há algo no feed
-    const loginRes = await request.post(`${API}/auth/login`, {
-      data: { username: u.username, password: u.password },
-    });
-    const { token } = await loginRes.json();
-    await request.post(`${API}/posts`, {
-      data: { content: `Post para curtir ${TS}` },
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await loginAndCreatePost(request, u, `Post para curtir ${TS}`);
 
     await page.reload();
     await page.waitForLoadState('networkidle');
@@ -74,15 +76,7 @@ test.describe('E2E — Publicar Post e Curtir', () => {
       password: 'senha12345',
     };
     await registerAndLogin(page, request, u);
-
-    const loginRes = await request.post(`${API}/auth/login`, {
-      data: { username: u.username, password: u.password },
-    });
-    const { token } = await loginRes.json();
-    await request.post(`${API}/posts`, {
-      data: { content: `Post para descurtir ${TS}` },
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await loginAndCreatePost(request, u, `Post para descurtir ${TS}`);
 
     await page.reload();
     await page.waitForLoadState('networkidle');
